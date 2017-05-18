@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+import sys
+import os
+import glob
+import shutil
+try:
+    import pyfits
+except ImportError:
+    from astropy.io import fits as pyfits
+
+
+sourcefolder = os.path.abspath(sys.argv[1])
+destinfolder = os.path.abspath(sys.argv[2])
+
+coaddfolders = glob.glob(os.path.join(sourcefolder, "coadd_*"))
+coadds = []
+for folder in coaddfolders:
+    coadds.append(glob.glob(os.path.join(folder, "coadd*fits")))
+
+if all([len(coadd) == 0 for coadd in coadds]):
+    print("no coadd images in", sourcefolder)
+
+for coadd in coadds:
+    for file in coadd:
+        if ".weight." not in os.path.split(file)[1]:
+            with pyfits.open(file) as fits:
+                obsfilt = fits[0].header['FILTER']
+                target = fits[0].header['OBJECT'].strip("'")
+
+    dstfolder = os.path.join(destinfolder)
+    if not os.path.exists(dstfolder):
+        os.mkdir(dstfolder)
+    obsfilt = "_" + obsfilt
+    for file in coadd:
+        if ".weight." in os.path.split(file)[1]:
+            base, weight, ext = os.path.split(file)[1].rsplit('.', 2)
+            dstname = "%s%s.%s.%s" % (base, obsfilt, weight, ext)
+        else:
+            dstname = obsfilt.join(os.path.splitext(os.path.split(file)[1]))
+        newfile = os.path.join(dstfolder, dstname)
+        try:
+            shutil.copy2(file, newfile)
+        except Exception:
+            print("could not copy", file)
