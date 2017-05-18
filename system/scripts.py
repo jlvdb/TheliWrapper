@@ -2,6 +2,8 @@ import os
 import sys
 import subprocess
 from inspect import stack
+from .base import DIRS, LOCKFILE, LOGFILE, ERR_KEYS, ERR_EXCEPT
+from .base import check_system_lock
 
 
 def checked_call(script, arglist=None, parallel=False, **kwargs):

@@ -1,6 +1,6 @@
 import os
-from .base import *
 from .base import __version__
+from .base import *
 from .scripts import Scripts
 
 
