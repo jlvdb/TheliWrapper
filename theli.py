@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-from theli_base import (__version__, __version_theli__, __version_gui__,
-                        ascii_styled,
-                        Reduction)
-from theli_argparser import Parser
+from system.reduction import Reduction
+from commandline.parser import Parser
+
 
 # args, theli_args, maindir = Parser.parse_theli_args()
 # USE os.getcwd() as maindir now
