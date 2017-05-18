@@ -1,13 +1,6 @@
 """
 This is a command line interface to the wrapper for the THELI GUI
 scripts, based on the THELI package for astronomical image reduction.
-
-TODO:
- -- revise help strings
- -- identify unmatched parameters
- -- xtalk: verify ButtonIDs, better help, ...
- -- extensive parameter testing
- -- test MIR/NIR data, sequence handling, link creation/resolving
 """
 
 import os

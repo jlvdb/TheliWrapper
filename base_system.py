@@ -2,8 +2,6 @@
 This is a python wrapper for the THELI GUI scripts, based
 on the THELI package for astronomical image reduction.
 
-TODO:
- -- implement photometry, header update/restore, const. sky subtraction helper
 """
 
 import os
