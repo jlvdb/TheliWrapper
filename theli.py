@@ -1,4 +1,4 @@
-# load the THELI base reduction class
+#!/usr/bin/env python3
 from theli_base import (__version__, __version_theli__, __version_gui__,
                         ascii_styled,
                         Reduction)

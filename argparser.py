@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 This is a command line interface to the wrapper for the THELI GUI
 scripts, based on the THELI package for astronomical image reduction.
