@@ -1,7 +1,5 @@
 """
-This is a python wrapper for the THELI GUI scripts, based
-on the THELI package for astronomical image reduction.
-
+Defines low level functions and structures for the Reduction class
 """
 
 import os
@@ -11,7 +9,7 @@ import subprocess
 from re import split
 from fnmatch import fnmatch
 from inspect import stack
-from time import time, sleep
+from time import time
 from itertools import combinations
 from collections import namedtuple
 
@@ -239,22 +237,6 @@ for instrument in available_instruments:
         INSTRUMENTS[instrument] = chipprops(
             data["SIZEX"], data["SIZEY"], data["NCHIPS"], data["TYPE"],
             data["PIXSCALE"])
-
-ERR_KEYS = ["*Error*"]  # additional errors
-ERR_EXCEPT = []
-# get keywords for errors and exceptions in logfile from Theli GUI source file
-theliform_path = os.path.join(DIRS["PIPESOFT"], "gui", "theliform.ui.h")
-with open(theliform_path) as cc:
-    for line in cc.readlines():
-        line = line.strip()
-        if line.startswith("errorlist"):
-            statement = line.split('"', 1)[1].rsplit('"', 1)[0]
-            ERR_KEYS.append(statement.replace('\\"', '"'))
-        if line.startswith("falseerrorlist"):
-            statement = line.split('"', 1)[1].rsplit('"', 1)[0]
-            ERR_EXCEPT.append(statement.replace('\\"', '"'))
-if len(ERR_KEYS) == 1 or len(ERR_EXCEPT) == 0:
-    raise RuntimeError("could find error statements in %s" % theliform_path)
 
 
 # determine software versions

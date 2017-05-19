@@ -1,4 +1,8 @@
 """
+Defines data base of command line parameters for argparse.ArgumentParser
+"""
+
+"""
 # remaining parameters
 
 # sky helper

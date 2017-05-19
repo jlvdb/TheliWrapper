@@ -9,8 +9,25 @@ import argparse
 import shutil
 import textwrap
 from copy import copy
-from system.base import ascii_styled, DIRS
+
+from system.version import __version__
 from .commandlist import *
+
+
+# test terminal capabilities
+try:
+    # isatty is not always implemented, #6223.
+    assert((sys.platform != 'Pocket PC' and
+           (sys.platform != 'win32' or 'ANSICON' in os.environ)) or
+           not hasattr(sys.stdout, 'isatty') and sys.stdout.isatty())
+
+    def highlight_text(string):
+        """Format the input 'string' using ASCII-escape sequences bold red"""
+        return "\033[1;31;0m" + string + "\033[0;0;0m"
+
+except Exception:
+    def highlight_text(string):
+        return string
 
 
 class ActionJobCheck(argparse.Action):
@@ -93,7 +110,7 @@ class ActionHelpJob(argparse.Action):
             print()
         else:
             infostr = "THELI parameters that influence the " + \
-                "job %s:" % ascii_styled(values, "br-")
+                "job %s:" % highlight_text(values)
             print(textwrap.fill(infostr, width=self.width) + "\n")
             thelihelp = ActionHelpTheli(option_string, "dummy_dest")
             thelihelp.print_help(values, match_jobs_only=True)
@@ -114,18 +131,17 @@ class ActionHelpTheli(argparse.Action):
 
     def highlight_pattern(self, string, pattern, h_all=False):
         """highlightes first occurence of the search pattern in the string"""
-        stylestr = "br-"
         if pattern is None:
             return string
         try:
             idx = string.lower().index(pattern.lower())
             if h_all:
-                return ascii_styled(string, stylestr)
+                return highlight_text(string)
             else:
                 head = string[:idx]
                 midd = string[idx:idx + len(pattern)]
                 tail = string[idx + len(pattern):]
-                return head + ascii_styled(midd, stylestr) + tail
+                return head + highlight_text(midd) + tail
         except ValueError:
             return string
 
@@ -209,7 +225,7 @@ class ActionHelpTheli(argparse.Action):
         print(Parser.format_usage())
         infostr = "Grouped list of additional THELI parameters"
         if values is not None:
-            infostr += " (containing '%s')" % ascii_styled(values, "br-")
+            infostr += " (containing '%s')" % highlight_text(values)
         print(textwrap.fill(infostr, width=self.width) + ":\n")
         # generate help entries
         self.print_help(values)

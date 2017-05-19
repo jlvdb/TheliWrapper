@@ -1,9 +1,31 @@
+"""
+Provides a low level wrapper for the THELI GUI shell scripts that scannes their
+output for known error messages
+"""
+
 import os
 import sys
 import subprocess
 from inspect import stack
-from .base import DIRS, LOCKFILE, LOGFILE, ERR_KEYS, ERR_EXCEPT
-from .base import check_system_lock
+
+from .base import DIRS, LOCKFILE, LOGFILE, check_system_lock
+
+
+ERR_KEYS = ["*Error*"]  # additional errors
+ERR_EXCEPT = []
+# get keywords for errors and exceptions in logfile from Theli GUI source file
+theliform_path = os.path.join(DIRS["PIPESOFT"], "gui", "theliform.ui.h")
+with open(theliform_path) as cc:
+    for line in cc.readlines():
+        line = line.strip()
+        if line.startswith("errorlist"):
+            statement = line.split('"', 1)[1].rsplit('"', 1)[0]
+            ERR_KEYS.append(statement.replace('\\"', '"'))
+        if line.startswith("falseerrorlist"):
+            statement = line.split('"', 1)[1].rsplit('"', 1)[0]
+            ERR_EXCEPT.append(statement.replace('\\"', '"'))
+if len(ERR_KEYS) == 1 or len(ERR_EXCEPT) == 0:
+    raise RuntimeError("could find error statements in %s" % theliform_path)
 
 
 def checked_call(script, arglist=None, parallel=False, **kwargs):

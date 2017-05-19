@@ -1,7 +1,13 @@
+"""
+Base reduction system that manages the folders, parameters and script execution
+"""
+
 import os
-from .base import __version__
+from time import sleep
+
 from .base import *
 from .scripts import Scripts
+from .version import __version__
 
 
 class Reduction(object):
