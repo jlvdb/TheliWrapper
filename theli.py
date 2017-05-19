@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
-from theli_base import (__version__, __version_theli__, __version_gui__,
-                        ascii_styled,
-                        Reduction)
-from theli_argparser import Parser
+from system.reduction import Reduction
+from commandline.parser import Parser
 
-# args, theli_args, maindir = Parser.parse_theli_args()
-# USE os.getcwd() as maindir now
+
 args, theli_args = Parser.parse_theli_args()
 
 project = Reduction(
@@ -14,6 +11,7 @@ project = Reduction(
     flatoffdir=args.flatoff, sciencedir=args.science, skydir=args.sky,
     stddir=args.standard, reduce_skydir=args.reduce_sky,
     ncpus=args.threads, verbosity=args.verbosity, parseparams=theli_args)
+
 for job in args.jobs:
     # read parameters for Reduction - classmethods
     jobargs = [getattr(args, param) for param in job["para"]]
