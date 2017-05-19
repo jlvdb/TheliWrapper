@@ -53,7 +53,8 @@ class ActionParseFile(argparse.Action):
             return
         # if file does not exist, look into presets folder
         if not os.path.exists(values):
-            base_folder = os.path.dirname(os.path.realpath(__file__))
+            base_folder = os.path.split(
+                os.path.dirname(os.path.realpath(__file__)))[0]
             preset_file = os.path.join(base_folder, "presets", values)
         else:
             preset_file = values
