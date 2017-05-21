@@ -1,10 +1,184 @@
 """
-Defines data base of command line parameters for argparse.ArgumentParser
+Defines a data base of command line parameters for argparse.ArgumentParser
 """
 
-"""
-# remaining parameters
+# jobs/tasks for joblist parameter, similar tasks start with the same capital
+# letter, attribtes:
+# name: GUI check box label
+# func: class method of Reduction associated with task
+# para: list of parameters for class method, matches a command line parameter
+#       (in parse_parameters internal argparse name:
+#        without leading -- and - replaced by _)
+# help: help to print on screen
+parse_actions = {
+    "Fr": {
+        "name": "Sort data using FITS key",
+        "func": "sort_data_using_FITS_key",
+        "para": [],
+        "help": "Sorts data based on the identifier "
+                "given in this FITS keyword"},
+    "Fs": {
+        "name": "Split FITS / correct header",
+        "func": "split_FITS_correct_header",
+        "para": [],
+        "help": "Splits multi-extension FITS files, and "
+                "writes the THELI standard FITS header"},
+    "Lc": {
+        "name": "Create links",
+        "func": "create_links",
+        "para": ['links_chips', 'links_scratch_dir'],
+        "help": "Distributes the data over several hard disks"},
+    "Cb": {
+        "name": "Process biases",
+        "func": "process_biases",
+        "para": ['cal_bias_mode_min', 'cal_bias_mode_max', 'redo'],
+        "help": "Creates a master bias from a series of bias exposures"},
+    "Cd": {
+        "name": "Process draks",
+        "func": "process_darks",
+        "para": ['cal_dark_mode_min', 'cal_dark_mode_max', 'redo'],
+        "help": "Creates a master dark from a series of dark exposures"},
+    "Cf": {
+        "name": "Process flats",
+        "func": "process_flats",
+        "para": ['cal_flat_mode_min', 'cal_flat_mode_max', 'redo'],
+        "help": "Creates a master flat from a series of flat field exposures"},
+    "Cs": {
+        "name": "Calibrate data",
+        "func": "calibrate_data",
+        "para": ['use_dark', 'cal_data_mode_min', 'cal_data_mode_max', 'redo'],
+        "help": "Applies the master bias and master flat to the data"},
+    "Gs": {
+        "name": "Spread sequence (NIR)",
+        "func": "spread_sequence",
+        "para": ['nir_ngroups', 'nir_grouplen'],
+        "help": "Spreads a sequence of IR exposures in a certain way"},
+    "Bm": {
+        "name": "Background model correction",
+        "func": "background_model_correction",
+        "para": ['redo'],
+        "help": "Applies a background correction (subtraction, "
+                "superflat, fringe model, NIR sky)"},
+    "Gm": {
+        "name": "Merge sequence (NIR)",
+        "func": "merge_sequence",
+        "para": [],
+        "help": "Merges  a sequence of previously spread IR exposures"},
+    "Bn": {
+        "name": "Chop/Nod sky subtraction",
+        "func": "chop_nod_skysub",
+        "para": ['chop_pattern', 'chop_pattern_invert', 'redo'],
+        "help": "Does a chop-nod sky subtraction for mid-IR data"},
+    "Bc": {
+        "name": "Collapse correction",
+        "func": "collapse_correction",
+        "para": ['redo'],
+        "help": "Does a collapse correction to remove "
+                "horizontal or vertical gradients"},
+    "Di": {
+        "name": "Debloom images",
+        "func": "debloom_images",
+        "para": ['redo'],
+        "help": "Removes blooming spikes in the images (for "
+                "the preparation of colour pictures)"},
+    "Vb": {
+        "name": "Create binned preview",
+        "func": "create_binned_preview",
+        "para": ['redo'],
+        "help": "Creates a binned overview image for each exposure "
+                "of a multi-chip camera, and a TIFF image."},
+    "Wg": {
+        "name": "Create global weights",
+        "func": "create_global_weights",
+        "para": ['redo'],
+        "help": "Creates the basic weight map for "
+                "the individual weight images"},
+    "Wc": {
+        "name": "Create weights",
+        "func": "create_weights",
+        "para": ['redo'],
+        "help": "Creates the individual weight maps for each image"},
+    "Ds": {
+        "name": "Distribute target sets",
+        "func": "distribute_target_sets",
+        "para": ['image_min_overlap'],
+        "help": "Identifies image associations on the sky. The SCIENCE "
+                "directory field in the Initialise section will then "
+                "point to the first association found, SCIENCE_set_1."},
+    "Ar": {
+        "name": "Get reference catalogue",
+        "func": "get_reference_catalog",
+        "para": ['ref_cat', 'ref_cat_server', 'ref_image',
+                 'ref_image_detect_tresh', 'ref_image_detect_min_area',
+                 'redo'],
+        "help": "Downloads a reference catalogue from "
+                "web or creates it from an image"},
+    "Pi": {
+        "name": "Absolute photometry (indirect)",
+        "func": "absolute_photometry_indirect",
+        "para": [],
+        "help": "Attempts to derive absolute photometric "
+                "zeropoints for each exposure."},
+    "Pd": {
+        "name": "Absolute photometry (direct)",
+        "func": "absolute_photometry_direct",
+        "para": [],
+        "help": "Attempts to derive absolute photometric "
+                "zeropoints for each exposure."},
+    "As": {
+        "name": "Create source catalogue",
+        "func": "create_source_cat",
+        "para": ['redo'],
+        "help": "Creates a source catalogue for each image "
+                "for later astrometry and photometry"},
+    "Ac": {
+        "name": "Astro+photomtery",
+        "func": "astro_and_photometry",
+        "para": ['astrometry_method', 'ignore_scamp_segfault', 'redo'],
+        "help": "Calculates astrometric and photometric solutions"},
+    "Hu": {
+        "name": "Update header",
+        "func": "astrometry_update_header",
+        "para": [],
+        "help": "Writes the zero-order astrometric solution (CRVAL, "
+                "CRPIX, CD-matrix) into the FITS headers"},
+    "Hr": {
+        "name": "Restore header",
+        "func": "astrometry_restore_header",
+        "para": [],
+        "help": "Restores the original (raw data) zero-order astrometric "
+                "information in the header (undo \"update header\")"},
+    "Sh": {
+        "name": "Sky subtraction helper",
+        "func": "sky_subtraction_helper",
+        "para": [],
+        "help": "Prepares a constant sky model subtraction"},
+    "Ss": {
+        "name": "Sky subtraction",
+        "func": "sky_subtraction",
+        "para": ['sky_model_const', 'redo'],
+        "help": "Subtracts the sky from the images"},
+    "Ca": {
+        "name": "Coaddition",
+        "func": "coaddition",
+        "para": ['cd_posangle_from_image', 'redo'],
+        "help": "Coadds the data"},
+    "Lr": {
+        "name": "Resolve links",
+        "func": "resolve_links",
+        "para": [],
+        "help": "Recollects the data spread over several "
+                "hard disks in the beginning (Lc)"}
+}
+# order in which the jobs will be listed in help
+parse_actions_ordered = [
+    "Fr", "Fs", "Lc", "Cb", "Cd", "Cf", "Cs", "Gs", "Bm",
+    "Gm", "Bn", "Bc", "Di", "Vb", "Wg", "Wc", "Ds", "Ar",
+    "Pi", "Pd", "As", "Ac", "Hu", "Hr", "Sh", "Ss", "Ca", "Lr"]
 
+
+# not yet implemented parameters
+"""
 # sky helper
 'V_CSKY_RA1'
 'V_CSKY_RA2'
@@ -16,12 +190,20 @@ Defines data base of command line parameters for argparse.ArgumentParser
 'V_CSKY_YMAX'
 'V_CSKYMANUAL'
 'V_CSKYMETHOD'
-
 # unmatched, probably not in use any more
 'V_GLOBWDARKDIR'  # weighting: use bias instead of dark?
 'V_ABSPHOT_NIGHTSELECTION'
 """
-
+# commandline argument data base for argument parser and help,
+# grouped by topic/task, possible attributes:
+# task: list of jobs affected by this parameter
+# sort: numeric key to sort arguments within group
+# name: target variable name in THELI parameter files
+# type: argument type
+# choi: tuple of possible input choices
+# maps: tuple of values to which choices are mapped
+# defa: default value
+# help: help to print on screen
 parse_parameters = {
     "Astro/Photometry": {
         "--astrometry-method": {
@@ -1746,144 +1928,7 @@ parse_parameters = {
                     "setting: 0 (empty)"}
     }
 }
+# quick lookup list of all parameters
 parse_parameters_allkeys = []
 for group in parse_parameters:
     parse_parameters_allkeys.extend(list(parse_parameters[group].keys()))
-
-
-parse_actions = {
-    "Fr": {
-        "func": "sort_data_using_FITS_key",
-        "para": [],
-        "help": "Sorts data based on the identifier "
-                "given in this FITS keyword"},
-    "Fs": {
-        "func": "split_FITS_correct_header",
-        "para": [],
-        "help": "Splits multi-extension FITS files, and "
-                "writes the THELI standard FITS header"},
-    "Lc": {
-        "func": "create_links",
-        "para": ['links_chips', 'links_scratch_dir'],
-        "help": "Distributes the data over several hard disks"},
-    "Cb": {
-        "func": "process_biases",
-        "para": ['cal_bias_mode_min', 'cal_bias_mode_max', 'redo'],
-        "help": "Creates a master bias from a series of bias exposures"},
-    "Cd": {
-        "func": "process_darks",
-        "para": ['cal_dark_mode_min', 'cal_dark_mode_max', 'redo'],
-        "help": "Creates a master dark from a series of dark exposures"},
-    "Cf": {
-        "func": "process_flats",
-        "para": ['cal_flat_mode_min', 'cal_flat_mode_max', 'redo'],
-        "help": "Creates a master flat from a series of flat field exposures"},
-    "Cs": {
-        "func": "calibrate_data",
-        "para": ['use_dark', 'cal_data_mode_min', 'cal_data_mode_max', 'redo'],
-        "help": "Applies the master bias and master flat to the data"},
-    "Gs": {
-        "func": "spread_sequence",
-        "para": ['nir_ngroups', 'nir_grouplen'],
-        "help": "Spreads a sequence of IR exposures in a certain way"},
-    "Bm": {
-        "func": "background_model_correction",
-        "para": ['redo'],
-        "help": "Applies a background correction (subtraction, "
-                "superflat, fringe model, NIR sky)"},
-    "Gm": {
-        "func": "merge_sequence",
-        "para": [],
-        "help": "Merges  a sequence of previously spread IR exposures"},
-    "Bn": {
-        "func": "chop_nod_skysub",
-        "para": ['chop_pattern', 'chop_pattern_invert', 'redo'],
-        "help": "Does a chop-nod sky subtraction for mid-IR data"},
-    "Bc": {
-        "func": "collapse_correction",
-        "para": ['redo'],
-        "help": "Does a collapse correction to remove "
-                "horizontal or vertical gradients"},
-    "Di": {
-        "func": "debloom_images",
-        "para": ['redo'],
-        "help": "Removes blooming spikes in the images (for "
-                "the preparation of colour pictures)"},
-    "Vb": {
-        "func": "create_binned_preview",
-        "para": ['redo'],
-        "help": "Creates a binned overview image for each exposure "
-                "of a multi-chip camera, and a TIFF image."},
-    "Wg": {
-        "func": "create_global_weights",
-        "para": ['redo'],
-        "help": "Creates the basic weight map for "
-                "the individual weight images"},
-    "Wc": {
-        "func": "create_weights",
-        "para": ['redo'],
-        "help": "Creates the individual weight maps for each image"},
-    "Ds": {
-        "func": "distribute_target_sets",
-        "para": ['image_min_overlap'],
-        "help": "Identifies image associations on the sky. The SCIENCE "
-                "directory field in the Initialise section will then "
-                "point to the first association found, SCIENCE_set_1."},
-    "Ar": {
-        "func": "get_reference_catalog",
-        "para": ['ref_cat', 'ref_cat_server', 'ref_image',
-                 'ref_image_detect_tresh', 'ref_image_detect_min_area',
-                 'redo'],
-        "help": "Downloads a reference catalogue from "
-                "web or creates it from an image"},
-    "Pi": {
-        "func": "absolute_photometry_indirect",
-        "para": [],
-        "help": "Attempts to derive absolute photometric "
-                "zeropoints for each exposure."},
-    "Pd": {
-        "func": "absolute_photometry_direct",
-        "para": [],
-        "help": "Attempts to derive absolute photometric "
-                "zeropoints for each exposure."},
-    "As": {
-        "func": "create_source_cat",
-        "para": ['redo'],
-        "help": "Creates a source catalogue for each image "
-                "for later astrometry and photometry"},
-    "Ac": {
-        "func": "astro_and_photometry",
-        "para": ['astrometry_method', 'ignore_scamp_segfault', 'redo'],
-        "help": "Calculates astrometric and photometric solutions"},
-    "Hu": {
-        "func": "astrometry_update_header",
-        "para": [],
-        "help": "Writes the zero-order astrometric solution (CRVAL, "
-                "CRPIX, CD-matrix) into the FITS headers"},
-    "Hr": {
-        "func": "astrometry_restore_header",
-        "para": [],
-        "help": "Restores the original (raw data) zero-order astrometric "
-                "information in the header (undo \"update header\")"},
-    "Sh": {
-        "func": "sky_subtraction_helper",
-        "para": [],
-        "help": "Prepares a constant sky model subtraction"},
-    "Ss": {
-        "func": "sky_subtraction",
-        "para": ['sky_model_const', 'redo'],
-        "help": "Subtracts the sky from the images"},
-    "Ca": {
-        "func": "coaddition",
-        "para": ['cd_posangle_from_image', 'redo'],
-        "help": "Coadds the data"},
-    "Lr": {
-        "func": "resolve_links",
-        "para": [],
-        "help": "Recollects the data spread over several "
-                "hard disks in the beginning (Lc)"}
-}
-parse_actions_ordered = [
-    "Fr", "Fs", "Lc", "Cb", "Cd", "Cf", "Cs", "Gs", "Bm",
-    "Gm", "Bn", "Bc", "Di", "Vb", "Wg", "Wc", "Ds", "Ar",
-    "Pi", "Pd", "As", "Ac", "Hu", "Hr", "Sh", "Ss", "Ca", "Lr"]
