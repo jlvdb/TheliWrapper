@@ -89,15 +89,16 @@ except ImportError:
             return values
 
 
-# test terminal capabilities
+# This is supposed to test if the terminal supports ANSI escape sequences.
+# If not define fall back function
 try:
-    # isatty is not always implemented, #6223.
+    # this might not cover all cases
     assert((sys.platform != 'Pocket PC' and
            (sys.platform != 'win32' or 'ANSICON' in os.environ)) or
            not hasattr(sys.stdout, 'isatty') and sys.stdout.isatty())
 
     def ascii_styled(string, stylestr):
-        """Format the input 'string' using ASCII-escape sequences. The 3-byte
+        """Format the input 'string' using ANSI-escape sequences. The 3-byte
         'stylestr' determines: textstyle, foreground, background-color."""
         # default, bold, greyed, italic, underlined
         attr = {"-": "0", "b": "1", "t": "2", "i": "3", "u": "4"}
@@ -114,8 +115,9 @@ try:
         except KeyError:
             raise ValueError("invalid formatter: '%s'" % stylestr)
 
-except Exception:
+except AssertionError:
     def ascii_styled(string, stylestr):
+        """Return input string if ANSI escape sequences are not supported"""
         return string
 
 

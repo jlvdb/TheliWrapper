@@ -1,5 +1,5 @@
 """
-This is a command line interface to the wrapper for the THELI GUI
+This is a command line interface to the wrapper for the THELI GUI 
 scripts, based on the THELI package for astronomical image reduction.
 """
 
@@ -11,110 +11,114 @@ import textwrap
 from copy import copy
 
 from system.version import __version__
-from .commandlist import *
+from .commandlist import *  # command line parameter data base
 
 
-# test terminal capabilities
+# This is supposed to test if the terminal supports ANSI escape sequences.
+# If not define fall back function
 try:
-    # isatty is not always implemented, #6223.
+    # this might not cover all cases
     assert((sys.platform != 'Pocket PC' and
            (sys.platform != 'win32' or 'ANSICON' in os.environ)) or
            not hasattr(sys.stdout, 'isatty') and sys.stdout.isatty())
 
     def highlight_text(string):
-        """Format the input 'string' using ASCII-escape sequences bold red"""
+        """Format the input 'string' using ANSI-escape sequences bold red"""
         return "\033[1;31;0m" + string + "\033[0;0;0m"
 
-except Exception:
+except AssertionError:
     def highlight_text(string):
+        """Return input string if ANSI escape sequences are not supported"""
         return string
 
 
-class ActionJobCheck(argparse.Action):
-    def __init__(self, option_strings, dest, **kwargs):
-        super(ActionJobCheck, self).__init__(option_strings, dest, **kwargs)
-
-    def __call__(self, parser, namespace, values, option_string=None):
-        joblist = [values[i:i + 2] for i in range(0, len(values), 2)]
-        for job in joblist:
-            if job not in parse_actions:
-                raise parser.error(
-                    "invalid job descriptor '%s' in '%s'" % (job, values))
-        joblist = [parse_actions[job] for job in joblist]
-        setattr(namespace, self.dest, joblist)
-
-
 class ActionParseFile(argparse.Action):
+    """Read a parameter file with optinal arguments and parse it to the
+    parameter name space. If the file (-path) does not exist, look into the
+    ../preset folder"""
+
     def __init__(self, option_strings, dest, **kwargs):
         super(ActionParseFile, self).__init__(option_strings, dest, **kwargs)
 
-    def __call__(self, parser, namespace, values, option_string=None):
-        if values == "**this_is_a_mock**":  # don't run again if mock
-            return
-        # if file does not exist, look into presets folder
-        if not os.path.exists(values):
+    def __call__(self, parser, namespace, configfile, option_string=None):
+        # if configfile does not exist, look into presets folder
+        if not os.path.exists(configfile):
             base_folder = os.path.split(
                 os.path.dirname(os.path.realpath(__file__)))[0]
-            preset_file = os.path.join(base_folder, "presets", values)
-        else:
-            preset_file = values
-        # load file and strip lines
+            configfile = os.path.join(base_folder, "presets", configfile)
         try:
-            with open(preset_file) as conf:
+            with open(configfile) as conf:
                 content = conf.readlines()
         except FileNotFoundError:
-            raise parser.error("found no parameter file: %s" % values)
+            raise parser.error("parameter file not found: %s" % configfile)
         except IOError:
             raise parser.error(
-                "could not read from parameter file: %s" % values)
-        # workaround: need to give mock positionals to accomplish parsing
-        arguments = ["Fs", "**this_is_a_mock**"]
+                "cannot read from parameter file: %s" % configfile)
+        # copy the values positional command line parameters
+        arguments = [namespace.jobs, namespace.inst]
+        # convert file content to command line arguments and parse them
         for line in content:
             line = line.strip()
+            # allow comment lines and prepend "--" to lines
             if line.startswith("#") or line == "":
                 continue
             if not line.startswith("--"):
                 line = "--" + line
             line = line.split()
             arguments.extend(line)
-        # parse arguments from file
         new_args = parser.parse_args(arguments)
+        # write the new arguments to the parameter name space
         for arg in vars(new_args):
-            # make sure that mocks will not end up in our arguments
-            if arg not in ("jobs", "inst", "main", "bias", "dark", "flat",
-                           "flatoff", "science", "sky", "standard"):
+            # make sure that folders are not parsed in configureation file
+            if arg not in ("main", "bias", "dark", "flat", "flatoff",
+                           "science", "sky", "standard"):
                 setattr(namespace, arg, getattr(new_args, arg))
+            elif arg is None:
+                parser.error(
+                    "parsing data folders in configuration file is not " +
+                    "allowed")
 
 
 class ActionHelpJob(argparse.Action):
+    """Print job help on screen, if --help-jobs is used. Displays the job
+    abbreviations for use with JOBLIST, short description and help text.
+    If a job abbriviation is given as optional parameter, list the THELI
+    parameters that influence this job."""
+
     def __init__(self, option_strings, dest, nargs='?', **kwargs):
         super(ActionHelpJob, self).__init__(
             option_strings, dest, nargs, **kwargs)
+        # determine maximum possible text display width, limit it to 120
         self.width = min(120, shutil.get_terminal_size((60, 24))[0])
 
-    def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(self, parser, namespace, jobabbr, option_string=None):
+        # generate help text
         print(Parser.format_usage())
-        # generate help entries
-        help_pad = 8
-        if values is None:
+        help_pad = 8  # indent of the help text
+        if jobabbr is None:
             infostr = ("List of job abbreviations. Assemble those you need in "
                        "THIS order to create the JOBLIST:")
             print(textwrap.fill(infostr, width=self.width) + "\n")
             print("job abbreviations:")
+            # list the jobs in the correct order with their help texts
             for arg in parse_actions_ordered:
                 action = parse_actions[arg]
-                helpstr = ("\n" + help_pad * " ").join(
-                    textwrap.wrap(
-                        action["help"], width=(self.width - help_pad)))
+                # use wordwrap to format text and join lines with indentation
+                helpstr = [action["name"] + ":"]
+                helpstr.extend(textwrap.wrap(
+                    action["help"], width=(self.width - help_pad)))
+                helpstr = ("\n" + help_pad * " ").join(helpstr)
+                # print abbreviation, short description, help text (new line)
                 print("{:{pad}}{:}".format(
                     "  %s  " % arg, helpstr, pad=help_pad))
             print()
-        else:
+        else:  # display THELI parameters that act on the job 'jobabbr'
             infostr = "THELI parameters that influence the " + \
-                "job %s:" % highlight_text(values)
+                "job %s:" % highlight_text(jobabbr)
             print(textwrap.fill(infostr, width=self.width) + "\n")
+            # find all THELI parameters belonging to job
             thelihelp = ActionHelpTheli(option_string, "dummy_dest")
-            thelihelp.print_help(values, match_jobs_only=True)
+            thelihelp.print_help(jobabbr, match_jobs_only=True)
         print(Parser.epilog)
         sys.exit(0)
 
@@ -298,6 +302,18 @@ class TheliParser(argparse.ArgumentParser):
                     idx = param["choi"].index(value)
                     translated = param["maps"][idx]
                     setattr(parsedargs, arg, translated)
+        # collect all the data for job list
+        # split the joblist string into a list
+        jobstring = parsedargs.jobs
+        joblist = [jobstring[i:i + 2] for i in range(0, len(jobstring), 2)]
+        for i, job in enumerate(joblist):
+            # check if they are valid
+            if job not in parse_actions:
+                raise parser.error(
+                    "invalid job descriptor '%s', " % job +
+                    "for help use --help-jobs")
+            # replace the job key with the attributes from parse_actions
+            joblist[i] = parse_actions[job]
         # convert parsed arguments to THELI parameter dict
         # take all parameters except those beloging to GUI widgets
         parameter_dict = {}
@@ -314,7 +330,7 @@ class TheliParser(argparse.ArgumentParser):
                         parameter_dict[key] = value
                     except KeyError:
                         pass  # in different group
-        return parsedargs, parameter_dict
+        return parsedargs, joblist, parameter_dict
         # USE os.getcwd() as maindir now
         # get a root folder from any of the data folders
         # folderargs = (
@@ -345,7 +361,7 @@ Parser = TheliParser(
         prog, max_help_position=28))
 
 Parser.add_argument(
-    'jobs', metavar='JOBLIST', action=ActionJobCheck,
+    'jobs', metavar='JOBLIST',
     help="listing of job descriptors (see --help-jobs)")
 Parser.add_argument(
     'inst', metavar="INST",
@@ -362,7 +378,7 @@ foldergroup = Parser.add_argument_group(
     description="data folders, must be all subfolders of the root/main-folder")
 # USE os.getcwd() as maindir now
 foldergroup.add_argument(
-    '--main', '-m', metavar='ROOTFOLDER', default=os.getcwd(),
+    '--main', '-m', metavar='ROOTDIR', default=os.getcwd(),
     help="root/main folder containing all data, defaults to current working "
          "directory")
 foldergroup.add_argument(

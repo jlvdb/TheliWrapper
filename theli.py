@@ -3,7 +3,7 @@ from system.reduction import Reduction
 from commandline.parser import Parser
 
 
-args, theli_args = Parser.parse_theli_args()
+args, joblist, theli_args = Parser.parse_theli_args()
 
 project = Reduction(
     args.inst, args.main, title=args.title,
@@ -12,7 +12,7 @@ project = Reduction(
     stddir=args.standard, reduce_skydir=args.reduce_sky,
     ncpus=args.threads, verbosity=args.verbosity, parseparams=theli_args)
 
-for job in args.jobs:
+for job in joblist:
     # read parameters for Reduction - classmethods
     jobargs = [getattr(args, param) for param in job["para"]]
     # execute job
