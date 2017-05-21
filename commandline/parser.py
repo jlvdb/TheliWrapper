@@ -347,7 +347,7 @@ class TheliParser(argparse.ArgumentParser):
                 if param in all_params and value is not None:
                     # convert to command line string
                     argstr = "--" + param.replace("_", "-")
-                    # if parameter is in current group add it to parameter_dict 
+                    # if parameter is in current group add it to parameter_dict
                     # this is not very efficient but works
                     try:
                         key = content[argstr]["name"]
@@ -431,10 +431,10 @@ optargs.add_argument(
     "--verbosity", "-v", type=str, default="normal",
     choices=("quiet", "normal", "full"))
 
+# add the THELI parameters
 theli_group = Parser.add_argument_group(
     title="THELI parameters",
     description="parameters to control THELI routines (see --help-theli)")
-# add the THELI parameters
 for group, content in parse_parameters.items():
     for arg, param in content.items():
         # determine arguments for .add_argument based on parse_parameters data
