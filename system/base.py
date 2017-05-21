@@ -241,25 +241,6 @@ for instrument in available_instruments:
             data["PIXSCALE"])
 
 
-# determine software versions
-__version_theli__, __version_gui__, __version__ = "N/A", "N/A", "0.3"
-versionfile = os.path.join(DIRS["PIPESOFT"], "README")
-with open(versionfile) as txt:
-    for line in txt:
-        if "version" in line:
-            for word in line.split():
-                if any(char in word for char in "0123456789"):
-                    __version_theli__ = word
-                    break
-            break
-versionfile = os.path.join(DIRS["PIPESOFT"], "gui", "CHANGELOG")
-with open(versionfile) as txt:
-    for line in txt:
-        if line.startswith("v"):
-            __version_gui__ = line.split()[0].strip("v")
-            break
-
-
 def check_system_lock():
     # test if the system is locked already, prevents parallel instances
     # messing up the configuration files

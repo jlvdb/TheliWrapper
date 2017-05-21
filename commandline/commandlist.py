@@ -200,6 +200,7 @@ parse_actions_ordered = [
 # sort: numeric key to sort arguments within group
 # name: target variable name in THELI parameter files
 # type: argument type
+# meta: meta variable type (e.g. FILE)
 # choi: tuple of possible input choices
 # maps: tuple of values to which choices are mapped
 # defa: default value

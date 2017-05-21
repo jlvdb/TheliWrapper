@@ -10,7 +10,7 @@ import shutil
 import textwrap
 from copy import copy
 
-from system.version import __version__
+from system.version import __version_theli__, __version_gui__, __version__
 from .commandlist import *  # command line parameter data base
 
 
@@ -80,8 +80,8 @@ class ActionParseFile(argparse.Action):
 
 
 class ActionHelpJob(argparse.Action):
-    """Print job help on screen, if --help-jobs is used. Displays the job
-    abbreviations for use with JOBLIST, short description and help text.
+    """Print job help on screen, if --help-jobs is used and exit. Displays the
+    job abbreviations for use with JOBLIST, short description and help text.
     If a job abbriviation is given as optional parameter, list the THELI
     parameters that influence this job."""
 
@@ -124,25 +124,31 @@ class ActionHelpJob(argparse.Action):
 
 
 class ActionHelpTheli(argparse.Action):
-    """Behaves like the argparse help formatter, but has some extras:
-    it supports pattern search to shrink down the long parameter listing"""
+    """Print job help on screen, if --help-parameters is used. Displays the
+    available THELI parameters, the parameter type and choices and help text.
+    If a search string is given, list the parameters that contain this string
+    either in the name or in the help text."""
 
     def __init__(self, option_strings, dest, nargs='?', **kwargs):
         super(ActionHelpTheli, self).__init__(
             option_strings, dest, nargs, **kwargs)
-        # alignment
+        # determine maximum possible text display width, limit it to 120
         self.width = min(120, shutil.get_terminal_size((60, 24))[0])
+        # scaling padding/indent of the help text, limited to 36
         self.help_pad = min(36, int(self.width * 0.4))
 
     def highlight_pattern(self, string, pattern, h_all=False):
-        """highlightes first occurence of the search pattern in the string"""
+        """Highlightes first occurence of the search pattern in string or full
+        string. Reterns input string if pattern is None or not in string."""
         if pattern is None:
             return string
         try:
+            # convert string and pattern to lower case to be case insensitive
             idx = string.lower().index(pattern.lower())
-            if h_all:
+            # exits here, if pattern not in string
+            if h_all:  # colorize full string
                 return highlight_text(string)
-            else:
+            else:  # colorize pattern only
                 head = string[:idx]
                 midd = string[idx:idx + len(pattern)]
                 tail = string[idx + len(pattern):]
@@ -151,73 +157,92 @@ class ActionHelpTheli(argparse.Action):
             return string
 
     def format_argument(self, arg, param):
-        # format the argument and choices
+        """Format a help string for a THELI argument (arg) from an entry in
+        parse_parameters (param), including possible choices (if any) and data
+        type."""
+        # indent argument by 2
+        string = "  %s " % arg
+        # if argument has choices
         if "choi" in param:
-            string = "  %s " % arg
-            # replace white spaces with rarely used character "´"
+            # Use textwrap to fit choices to window, goal: comma separated list
+            # of choices, wrapped in {}, note: textwrap wraps on white spaces.
+            # replace white spaces in choices by "´"
             choicestr = " ".join([c.replace(" ", "´") for c in param["choi"]])
             choicestr = "{%s}" % choicestr
-            # use textwrap which splits at white spaces
-            # run with respect to indented first line
+            # use textwrap to fit first line (length reduced by arg. string)
+            # wrap remaining lines on full terminal width
             lines = textwrap.wrap(
                 choicestr, width=(self.width - len(string) - 1))
-            # all but first line: merge and resplit them on terminal width
             rest = textwrap.wrap(
                 " ".join(lines[1:]), width=(self.width - 1))
             # construct final string with new line separation
             choicestr = lines[0]
             if len(rest) > 0:
-                choicestr += "\n" + "\n".join(rest)
-            # make list comma separated and revert original white spaces
+                choicestr += ",\n" + ",\n".join(rest)
+            # replace white spaces back to commas, restore white spaces
             choicestr = choicestr.replace(" ", ",").replace("´", " ")
-            string += choicestr.replace("\n", ",\n") + "  "
+            string += choicestr + "  "
+        # if argument does not have choices add information about argument type
         else:
-            if "meta" in param:
-                metavar = " " + param["meta"]
+            if "meta" in param:  # meta argument type, if type is str
+                string += param["meta"] + "  "
             elif param["type"] == str:
-                metavar = " STR"
+                string += "STR  "
             elif param["type"] == int:
-                metavar = " INT"
+                string += "INT  "
             elif param["type"] == float:
-                metavar = " FLOAT"
-            string = "  %s%s  " % (arg, metavar)
+                string += "FLOAT  "
+        # add trailing white spaces to pad the help string, begin in new line
+        # if string is too wider than indentation
         string = "{:{pad}}".format(string, pad=self.help_pad)
-        # format help message
         if len(string) > self.help_pad:
             string += "\n" + " " * self.help_pad
-        # wrap long lines and keep alignment at 'help_pad'
+        # wrap long lines and keep indentation
         helpstr = ("\n" + self.help_pad * " ").join(
             textwrap.wrap(param["help"], width=(self.width - self.help_pad)))
         return string + helpstr
 
     def print_help(self, pattern, match_jobs_only=False):
-        # apply search pattern to help
+        """Generate the help and print it to stdout. Filter the results, if
+        --help-parameters is given with a filter pattern."""
         helpdict = copy(parse_parameters)
+        # remove entries from helpdict, which do not contain the pattern either
+        # argument name or help text
+        # if the group name itself matches, keep the whole group
+        # if match_jobs_only is True, filter on job abbreviations instead
+        # perform case insensitive matching by converting to lower case
+        lpattern = pattern.lower()
         if pattern is not None:
             for group in parse_parameters:
-                if pattern.lower() in group.lower() and not match_jobs_only:
+                # keep whole group, if it machtes the pattern
+                if lpattern in group.lower() and not match_jobs_only:
                     continue
+                # collect arguments that match pattern
                 filtered_args = {}
                 if match_jobs_only:
                     for arg, param in parse_parameters[group].items():
                         if "task" not in param:
                             continue
-                        if any(pattern.lower() in t.lower()
-                               for t in param["task"]):
+                        # if any task matches, keep argument
+                        if any(lpattern in task.lower()
+                               for task in param["task"]):
                             filtered_args[arg] = param
                 else:
                     for arg, param in parse_parameters[group].items():
-                        if pattern.lower() in arg.lower() or \
-                                pattern.lower() in param["help"].lower():
+                        # if argument name or help text match, keep argument
+                        if lpattern in arg.lower() or \
+                                lpattern in param["help"].lower():
                             filtered_args[arg] = param
+                # if group contains no matching entry, remove it completely,
+                # otherwise keep only selection
                 if len(filtered_args) == 0:
                     helpdict.pop(group)
                 else:
                     helpdict[group] = filtered_args
-        # generate sorted and formatted help
+        # print helpdict sorted alphabetically by group name
         for group in sorted(helpdict.keys()):
             print(self.highlight_pattern(group + ":", pattern, h_all=True))
-            # sort the dictionary by the 'sort' keywords
+            # sort arguments by 'sort' keyword
             sorting = [(val["sort"], arg)
                        for arg, val in helpdict[group].items()]
             for pos, arg in sorted(sorting, key=lambda x: x[0]):
@@ -226,28 +251,29 @@ class ActionHelpTheli(argparse.Action):
                 print(helpstr)
             print()
 
-    def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(self, parser, namespace, pattern, option_string=None):
+        """Print the THELI parameter help and exit."""
         print(Parser.format_usage())
         infostr = "Grouped list of additional THELI parameters"
-        if values is not None:
-            infostr += " (containing '%s')" % highlight_text(values)
+        if pattern is not None:
+            infostr += " (containing '%s')" % highlight_text(pattern)
         print(textwrap.fill(infostr, width=self.width) + ":\n")
         # generate help entries
-        self.print_help(values)
+        self.print_help(pattern)
         print(Parser.epilog)
         sys.exit(0)
 
 
 class ActionVersion(argparse.Action):
-    """prints versions of the THELI installation, the GUI scripts and this
-    command line wrapper"""
+    """Print version of the THELI installation, the GUI scripts and the
+    command line wrapper and exit."""
 
     def __init__(self, option_strings, dest, nargs=0, **kwargs):
         super(ActionVersion, self).__init__(
             option_strings, dest, nargs, **kwargs)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        pad = 15
+        pad = 17
         versionstr = "{:{pad}}{:}\n".format(
             "THELI:", __version_theli__, pad=pad)
         versionstr += "{:{pad}}{:}\n".format(
@@ -256,54 +282,49 @@ class ActionVersion(argparse.Action):
         versionstr += "{:{pad}}{:}".format(
             os.path.basename(__file__), __version__, pad=pad)
         print(versionstr)
-        sys.exit()
+        sys.exit(0)
 
 
 def TypeNumberEmpty(type):
-    """Type test for int and float in Parser. Accepts an empty string to unset
-    parameters (corresponding to emtpy GUI line edits)"""
+    """Test input value for being 'type', but also accept an empty string to
+    represent unset parameters (corresponding to emtpy GUI line edits)"""
     def type_test(value):
-        if value != '':
+        if value == '':
+            return value
+        else:
             strtype = "float" if type == float else "int"
             try:
                 value = type(value)
             except ValueError:
                 raise argparse.ArgumentTypeError(
                     "invalid %s value: '%s'" % (strtype, value))
-        return value
-    return type_test
+    return type_test  # closure being of fixed type
 
 
 class TheliParser(argparse.ArgumentParser):
+    """Argument parser with custom parsing method that handles the argument
+    conversion. Maps choices to internal values, creates the list of jobs to
+    execute and a valid THELI parameter dictionary."""
 
     def parse_theli_args(self):
-        """convert command line arguments into the THELI parameter file formats
-        and group them in dictionary which can be parsed to Parameters.set(),
-        extract the main folder"""
-        # invoke argument parser
+        # invoke default argument parser
         parsedargs = self.parse_args()
-        # apply mapping to convert to correct internal parameter values
+        # convert choices to internal parameter values
         for group, content in parse_parameters.items():
             for argstr, param in content.items():
+                # convert to name in argparser namespace
                 arg = argstr[2:].replace("-", "_")
-                value = getattr(parsedargs, arg)
+                value = getattr(parsedargs, arg)  # read value
                 # ignore unset arguments
                 if value is None:
                     continue
-                # bool -> str: mapping from Y/N to the proper type of str,
-                #              can be either Y/N, 1/0 or TRUE/FALSE
+                # apply mapping, assume that "choices" exist and the arrays
+                # have equal shape
                 if "maps" in param:
-                    if "choi" not in param:
-                        raise ValueError(
-                            "mapping has to be given together with choices")
-                    if len(param["maps"]) != len(param["choi"]):
-                        raise IndexError(
-                            "choices and mapping lengths do not match")
                     idx = param["choi"].index(value)
                     translated = param["maps"][idx]
                     setattr(parsedargs, arg, translated)
-        # collect all the data for job list
-        # split the joblist string into a list
+        # split the joblist string into a list and collect the job list data
         jobstring = parsedargs.jobs
         joblist = [jobstring[i:i + 2] for i in range(0, len(jobstring), 2)]
         for i, job in enumerate(joblist):
@@ -314,41 +335,29 @@ class TheliParser(argparse.ArgumentParser):
                     "for help use --help-jobs")
             # replace the job key with the attributes from parse_actions
             joblist[i] = parse_actions[job]
-        # convert parsed arguments to THELI parameter dict
-        # take all parameters except those beloging to GUI widgets
+        # convert arguments to THELI parameter dict (see Parameters class)
         parameter_dict = {}
         for group, content in parse_parameters.items():
+            # take all parameters except those belonging to GUI widgets
             all_params = [argstr[2:].replace("-", "_")
                           for argstr, param in content.items()
                           if "name" in param]
             for param in parsedargs.__dict__:
                 value = getattr(parsedargs, param)
                 if param in all_params and value is not None:
+                    # convert to command line string
                     argstr = "--" + param.replace("_", "-")
+                    # if parameter is in current group add it to parameter_dict 
+                    # this is not very efficient but works
                     try:
                         key = content[argstr]["name"]
                         parameter_dict[key] = value
                     except KeyError:
                         pass  # in different group
         return parsedargs, joblist, parameter_dict
-        # USE os.getcwd() as maindir now
-        # get a root folder from any of the data folders
-        # folderargs = (
-        #     "science", "bias", "dark", "flat", "flatoff", "sky", "standard")
-        # maindir = None
-        # for folder in folderargs:
-        #     value = getattr(parsedargs, folder)
-        #     if value is not None:
-        #         main, base = os.path.split(os.path.normpath(value))
-        #         if main != "":
-        #             maindir = main
-        #             break
-        # if maindir is None:
-        #     raise Parser.error(
-        #         "could not determine root folder from any "
-        #         "of the data folders")
-        # return parsedargs, parameter_dict, main
 
+
+# Actual parser, arguments are grouped, THELI parameter help is supressed
 
 Parser = TheliParser(
     add_help=False,
@@ -376,7 +385,6 @@ presetgroup.add_argument(
 foldergroup = Parser.add_argument_group(
     title="data folders",
     description="data folders, must be all subfolders of the root/main-folder")
-# USE os.getcwd() as maindir now
 foldergroup.add_argument(
     '--main', '-m', metavar='ROOTDIR', default=os.getcwd(),
     help="root/main folder containing all data, defaults to current working "
@@ -426,10 +434,12 @@ optargs.add_argument(
 theli_group = Parser.add_argument_group(
     title="THELI parameters",
     description="parameters to control THELI routines (see --help-theli)")
+# add the THELI parameters
 for group, content in parse_parameters.items():
     for arg, param in content.items():
+        # determine arguments for .add_argument based on parse_parameters data
         kwargs = {'help': argparse.SUPPRESS}
-        # use special parser that allows empty string in some cases
+        # use special type test that allows empty string if default is ''
         if param["type"] in (int, float) and "defa" in param:
             if param["defa"] == '':
                 kwargs['type'] = TypeNumberEmpty(param["type"])
