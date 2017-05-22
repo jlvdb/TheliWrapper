@@ -21,11 +21,11 @@ MASTER_PATTERN = ("BIAS_", "FLAT_", "DARK_")
 # all possible image status flags in THELI file names (e.g. in xxxx_1OFCB.fits)
 THELI_FLAGS = ("B", "H", "C", "D", "P", ".sub")
 # dictionary of all possible THELI file name tags
+THELI_TAGS = {"OFC": ("OFC")}
 # given a file has tag 'key' then THELI_TAGS[key] lists all possible tags that
 # start with 'key'.
-# It is assumed that the flags have to appear in order as in THELI_FLAGS
-THELI_TAGS = {"OFC": ("OFC")}
 for n in range(6):
+    # It is assumed that the flags have to appear in the order as THELI_FLAGS
     flags = THELI_FLAGS[:n]
     tags = [""]
     tags.extend(flags)  # all remaining flags
@@ -40,37 +40,33 @@ for n in range(6):
 # paths read from "progs.ini": folders, binaries, scripts and configuration
 CMDTOOLS = {}  # binaries
 CMDSCRIPTS = {}  # scripts
-DIRS = {}
+DIRS = {}  # folders
 DIRS["HOME"] = os.path.expanduser("~")
 DIRS["PIPEHOME"] = os.path.join(DIRS["HOME"], ".theli")
-# get remaining paths from the GUI initialization script
-with open(os.path.join(DIRS["PIPEHOME"], "scripts", "progs.ini")) as ini:
-    for line in ini:
-        # check, if any of the variables is defined in the current line
-        if "=" in line:
-            if "USE_X" in line or line.startswith("if"):
-                continue
-            # remove export statements
-            cleaned = line.strip("export").strip().split(";")[0]
-            varname, value = cleaned.strip().split("=")
-            if value != "":
-                DIRS[varname] = value
 DIRS["PY2THELI"] = os.path.join(DIRS["PIPEHOME"], "py2theli")
+with open(os.path.join(DIRS["PIPEHOME"], "scripts", "progs.ini")) as ini:
+    # progs.ini is a shell script with variables to replace
+    for line in ini:
+        if "=" in line and not ("USE_X" in line or line.startswith("if")):
+            # remove export statements, drop statements after ";"
+            cleaned = line.strip("export").strip().split(";")[0].strip()
+            varname, value = cleaned.split("=")
+            if value != "" and varname != "LANG":
+                DIRS[varname] = value
 # substitute shell variables in paths
 for key in DIRS:
     DIRS[key] = DIRS[key].replace("~", DIRS["HOME"])
     while "$" in DIRS[key]:
+        # split value in '${' + 'variablename' + '} trailing part'
         lead, var = DIRS[key].split("{")
-        var, tail = var.split("}")  # var is the variable name
+        var, tail = var.split("}")
         tail = tail.strip("/")
         DIRS[key] = os.path.join(DIRS[var], tail)  # path: 'variable/tail'
     DIRS[key] = os.path.normpath(DIRS[key])
 LOCKFILE = os.path.join(DIRS["PY2THELI"], "theli.lock")
 LOGFILE = os.path.join(DIRS["PY2THELI"], "theli.log")
-# separate types
+# separate by types
 for key in tuple(DIRS.keys()):
-    if key == "LANG":
-        DIRS.pop(key)
     if key.startswith("P_"):
         CMDTOOLS[key] = DIRS.pop(key)
     if key.startswith("S_"):
