@@ -699,11 +699,15 @@ class Parameters(object):
                   "param_set2.ini": [],
                   "param_set3.ini": []}
 
-    def __init__(self, preparse):
+    def __init__(self, preparse={}):
         super(Parameters, self).__init__()
         """restore default parameters on initialization"""
-        self.reset()
-        self.set(preparse)
+        if type(preparse) is not dict:
+            raise ValueError("preparse must be of type 'dict'")
+        if len(preparse) == 0:
+            self.reset()
+        else:
+            self.set(preparse)
 
     def _modify_parameter_file(self, file_line_list, replace_dict):
         """Modify Theli-parameters of the param_set.ini that are kept in memory
