@@ -13,7 +13,137 @@ from time import time
 from itertools import combinations
 from collections import namedtuple
 
-# find method to read fits file headers
+
+# common fits file extensions and file names of calibration master frames
+FITS_EXTENSIONS = (".fits", ".FITS", ".fit", ".FIT", ".fts", ".FTS")
+MASTER_PATTERN = ("BIAS_", "FLAT_", "DARK_")
+
+# all possible image status flags in THELI file names (e.g. in xxxx_1OFCB.fits)
+THELI_FLAGS = ("B", "H", "C", "D", "P", ".sub")
+# dictionary of all possible THELI file name tags
+# given a file has tag 'key' then THELI_TAGS[key] lists all possible tags that
+# start with 'key'.
+# It is assumed that the flags have to appear in order as in THELI_FLAGS
+THELI_TAGS = {"OFC": ("OFC")}
+for n in range(6):
+    flags = THELI_FLAGS[:n]
+    tags = [""]
+    tags.extend(flags)  # all remaining flags
+    for i in range(2, 7):
+        # all combinations of flags unless we run out of them (i > n)
+        tags.extend(list(combinations(flags, i)))
+    # it should always start with 'OFC'
+    tags = ["OFC" + "".join(tup) for tup in tags]
+    # reverse the order for readability
+    THELI_TAGS["OFC" + THELI_FLAGS[n]] = tuple(reversed(tags))
+
+# paths read from "progs.ini": folders, binaries, scripts and configuration
+CMDTOOLS = {}  # binaries
+CMDSCRIPTS = {}  # scripts
+DIRS = {}
+DIRS["HOME"] = os.path.expanduser("~")
+DIRS["PIPEHOME"] = os.path.join(DIRS["HOME"], ".theli")
+# get remaining paths from the GUI initialization script
+with open(os.path.join(DIRS["PIPEHOME"], "scripts", "progs.ini")) as ini:
+    for line in ini:
+        # check, if any of the variables is defined in the current line
+        if "=" in line:
+            if "USE_X" in line or line.startswith("if"):
+                continue
+            # remove export statements
+            cleaned = line.strip("export").strip().split(";")[0]
+            varname, value = cleaned.strip().split("=")
+            if value != "":
+                DIRS[varname] = value
+DIRS["PY2THELI"] = os.path.join(DIRS["PIPEHOME"], "py2theli")
+# substitute shell variables in paths
+for key in DIRS:
+    DIRS[key] = DIRS[key].replace("~", DIRS["HOME"])
+    while "$" in DIRS[key]:
+        lead, var = DIRS[key].split("{")
+        var, tail = var.split("}")  # var is the variable name
+        tail = tail.strip("/")
+        DIRS[key] = os.path.join(DIRS[var], tail)  # path: 'variable/tail'
+    DIRS[key] = os.path.normpath(DIRS[key])
+LOCKFILE = os.path.join(DIRS["PY2THELI"], "theli.lock")
+LOGFILE = os.path.join(DIRS["PY2THELI"], "theli.log")
+# separate types
+for key in tuple(DIRS.keys()):
+    if key == "LANG":
+        DIRS.pop(key)
+    if key.startswith("P_"):
+        CMDTOOLS[key] = DIRS.pop(key)
+    if key.startswith("S_"):
+        CMDSCRIPTS[key] = DIRS.pop(key)
+
+# collect instrument data, each instrument should have a splitting script
+INSTRUMENTS = {}
+splitting_scripts = [
+    os.path.join(DIRS["SCRIPTS"], s) for s in os.listdir(DIRS["SCRIPTS"])
+    if os.path.isfile(os.path.join(DIRS["SCRIPTS"], s)) and
+    s.startswith("process_split_")]
+available_instruments = []
+for fpath in splitting_scripts:
+    # remove path, "process_split_" and extension -> instrument name
+    instrument = os.path.basename(fpath).split("_", 2)[-1]
+    instrument = os.path.splitext(instrument)[0]
+    # remove other scripts that made it into the list
+    if instrument[0].isupper():
+        available_instruments.append(instrument)
+# check the instrument definition files
+chipprops = namedtuple(
+    'chipprops', ['SIZEX', 'SIZEY', 'NCHIPS', 'TYPE', 'PIXSCALE'])
+for instrument in available_instruments:
+    # instrument data can be in different locations, depending on tpye in GUI
+    if_comm = os.path.join(
+        DIRS["SCRIPTS"], "instruments_commercial", "%s.ini" % instrument)
+    if_prof = os.path.join(
+        DIRS["SCRIPTS"], "instruments_professional", "%s.ini" % instrument)
+    if_user = os.path.join(
+        DIRS["PIPEHOME"], "instruments_user", "%s.ini" % instrument)
+    if os.path.exists(if_comm):
+        inifile = if_comm
+    elif os.path.exists(if_prof):
+        inifile = if_prof
+    else:
+        # data possibly incomplete -> remove instrument from final list
+        continue
+    with open(inifile) as ini:
+        content = ini.readlines()
+    data = {}
+    # read the shell variables of interest from the instrument file
+    for line in content:
+        if "SIZEX=" in line:
+            n = line.strip().split("=")
+            if len(n) == 3:
+                data["SIZEX"] = int(n[2].strip("()[]"))
+            else:
+                data["SIZEX"] = int(n[2].split()[0])
+        if "SIZEY=" in line:
+            n = line.strip().split("=")
+            if len(n) == 3:
+                data["SIZEY"] = int(n[2].strip("()[]"))
+            else:
+                data["SIZEY"] = int(n[2].split()[0])
+        if "NCHIPS=" in line:
+            n = line.strip().split("=")
+            data["NCHIPS"] = int(n[1])
+        if "TYPE=" in line:
+            data["TYPE"] = line.strip().split("=")[1]
+        if "PIXSCALE=" in line:
+            data["PIXSCALE"] = float(line.strip().split("=")[1])
+    if "TYPE" not in data:  # assume optical
+        data["TYPE"] = "OPT"
+    if len(data) == len(chipprops._fields):
+        INSTRUMENTS[instrument] = chipprops(
+            data["SIZEX"], data["SIZEY"], data["NCHIPS"], data["TYPE"],
+            data["PIXSCALE"])
+
+
+# find method to read fits file headers:
+# try astropy.io.fits
+# then pyfits
+# then dfits (from THELI binaries)
 try:
     from astropy.io import fits as pyfits
 
@@ -119,126 +249,6 @@ except AssertionError:
     def ascii_styled(string, stylestr):
         """Return input string if ANSI escape sequences are not supported"""
         return string
-
-
-# global parameters
-FITS_EXTENSIONS = (".fits", ".FITS", ".fit", ".FIT", ".fts", ".FTS")
-MASTER_PATTERN = ("BIAS_", "FLAT_", "DARK_")
-
-# possible THELI tag combinations for input files
-THELI_TAGS = {"OFC": ("OFC")}
-THELI_FLAGS = ("B", "H", "C", "D", "P", ".sub")
-for n in range(6):
-    flags = THELI_FLAGS[:n]
-    tags = [""]
-    tags.extend(flags)
-    for i in range(2, 7):
-        tags.extend(list(combinations(flags, i)))
-    tags = ["OFC" + "".join(tup) for tup in tags]
-    THELI_TAGS["OFC" + THELI_FLAGS[n]] = tuple(reversed(tags))
-del(flags, tags, n, i)
-
-# paths to theli, the binaries, scripts and the configuration
-CMDTOOLS = {}
-CMDSCRIPTS = {}
-DIRS = {}
-DIRS["HOME"] = os.path.expanduser("~")
-DIRS["PIPEHOME"] = os.path.join(DIRS["HOME"], ".theli")
-# get remaining paths from the GUI initialization script
-with open(os.path.join(DIRS["PIPEHOME"], "scripts", "progs.ini")) as ini:
-    for line in ini:
-        # check, if any of the variables is defined in the current line
-        if "=" in line:
-            if "USE_X" in line or line.startswith("if"):
-                continue
-            # remove export statements
-            cleaned = line.strip("export").strip().split(";")[0]
-            varname, value = cleaned.strip().split("=")
-            if value != "":
-                DIRS[varname] = value
-DIRS["PY2THELI"] = os.path.join(DIRS["PIPEHOME"], "py2theli")
-# substitute shell variables in paths
-for key in DIRS:
-    DIRS[key] = DIRS[key].replace("~", DIRS["HOME"])
-    while "$" in DIRS[key]:
-        lead, var = DIRS[key].split("{")
-        var, tail = var.split("}")  # var is the variable name
-        tail = tail.strip("/")
-        DIRS[key] = os.path.join(DIRS[var], tail)  # path: 'variable/tail'
-    DIRS[key] = os.path.normpath(DIRS[key])
-LOCKFILE = os.path.join(DIRS["PY2THELI"], "theli.lock")
-LOGFILE = os.path.join(DIRS["PY2THELI"], "theli.log")
-# separate types
-for key in tuple(DIRS.keys()):
-    if key == "LANG":
-        DIRS.pop(key)
-    if key.startswith("P_"):
-        CMDTOOLS[key] = DIRS.pop(key)
-    if key.startswith("S_"):
-        CMDSCRIPTS[key] = DIRS.pop(key)
-
-# collect instrument data, each instrument should have a splitting script
-INSTRUMENTS = {}
-splitting_scripts = [
-    os.path.join(DIRS["SCRIPTS"], s) for s in os.listdir(DIRS["SCRIPTS"])
-    if os.path.isfile(os.path.join(DIRS["SCRIPTS"], s)) and
-    s.startswith("process_split_")]
-available_instruments = []
-for fpath in splitting_scripts:
-    # remove path, "process_split_" and extension -> instrument name
-    instrument = os.path.basename(fpath).split("_", 2)[-1]
-    instrument = os.path.splitext(instrument)[0]
-    # remove other scripts that made it into the list
-    if instrument[0].isupper():
-        available_instruments.append(instrument)
-# check the instrument definition files
-chipprops = namedtuple(
-    'chipprops', ['SIZEX', 'SIZEY', 'NCHIPS', 'TYPE', 'PIXSCALE'])
-for instrument in available_instruments:
-    # instrument data can be in different locations, depending on tpye in GUI
-    if_comm = os.path.join(
-        DIRS["SCRIPTS"], "instruments_commercial", "%s.ini" % instrument)
-    if_prof = os.path.join(
-        DIRS["SCRIPTS"], "instruments_professional", "%s.ini" % instrument)
-    if_user = os.path.join(
-        DIRS["PIPEHOME"], "instruments_user", "%s.ini" % instrument)
-    if os.path.exists(if_comm):
-        inifile = if_comm
-    elif os.path.exists(if_prof):
-        inifile = if_prof
-    else:
-        # data possibly incomplete -> remove instrument from final list
-        continue
-    with open(inifile) as ini:
-        content = ini.readlines()
-    data = {}
-    # read the shell variables of interest from the instrument file
-    for line in content:
-        if "SIZEX=" in line:
-            n = line.strip().split("=")
-            if len(n) == 3:
-                data["SIZEX"] = int(n[2].strip("()[]"))
-            else:
-                data["SIZEX"] = int(n[2].split()[0])
-        if "SIZEY=" in line:
-            n = line.strip().split("=")
-            if len(n) == 3:
-                data["SIZEY"] = int(n[2].strip("()[]"))
-            else:
-                data["SIZEY"] = int(n[2].split()[0])
-        if "NCHIPS=" in line:
-            n = line.strip().split("=")
-            data["NCHIPS"] = int(n[1])
-        if "TYPE=" in line:
-            data["TYPE"] = line.strip().split("=")[1]
-        if "PIXSCALE=" in line:
-            data["PIXSCALE"] = float(line.strip().split("=")[1])
-    if "TYPE" not in data:  # assume optical
-        data["TYPE"] = "OPT"
-    if len(data) == len(chipprops._fields):
-        INSTRUMENTS[instrument] = chipprops(
-            data["SIZEX"], data["SIZEY"], data["NCHIPS"], data["TYPE"],
-            data["PIXSCALE"])
 
 
 def check_system_lock():
