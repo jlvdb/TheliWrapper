@@ -143,7 +143,12 @@ for instrument in available_instruments:
         INSTRUMENTS[instrument] = chipprops(
             data["SIZEX"], data["SIZEY"], data["NCHIPS"], data["TYPE"],
             data["PIXSCALE"])
-    # TODO: raise error if data is incomplete for user defined instrument
+    # raise error if data is incomplete for user defined instrument
+    else:
+        if inifile == if_user:
+            raise ValueError(
+                "configuration file for user defined instrument is incomplete "
+                "or has improper format: " + if_user)
 
 
 # find method to read fits file headers:
@@ -165,7 +170,21 @@ if __pyfits_success__:
         is found in a specified 'extension' of the FITS image. By default all
         extensions are checked, if they contain the key words.
         WARNING: if keys occur in multiple extensions, only the last occurence
-        is returned."""
+        is returned.
+
+        Arguments:
+            file [string]:
+                valid FITS file path
+            keys [string, list of strings]:
+                keyword(s) to read from FITS file
+            extension [int]:
+                FITS extension index (starting from 0) to check, by default -1
+                which checks all available extension
+
+        Returns:
+            values [list]:
+                value belonging to FITS key word in 'keys'
+        """
         # list to hold results in order as keys are specified
         values = [None] * len(keys)
         with pyfits.open(file) as fits:
@@ -189,7 +208,20 @@ else:
         is found in a specified 'extension' of the FITS image. By default all
         extensions are checked, if they contain the key words.
         WARNING: if keys occur in multiple extensions, only the last occurence
-        is returned."""
+        is returned.
+
+        Arguments:
+            file [string]:
+                valid FITS file path
+            keys [string, list of strings]:
+                keyword(s) to read from FITS file
+            extension [int]:
+                FITS extension index (starting from 0) to check, by default -1
+                which checks all available extension
+        Returns:
+            values [list]:
+                value belonging to FITS key word in 'keys'
+        """
         # read the header from the stdout of 'dfits -x [extension]'
         cmdstr = "%s -x %d %s" % (CMDTOOLS["P_DFITS"], extension + 1, file)
         call = subprocess.Popen(cmdstr, shell=True, stdout=subprocess.PIPE)
@@ -238,7 +270,26 @@ try:
 
     def ascii_styled(string, stylestr):
         """Format the input 'string' using ANSI-escape sequences. The 3-byte
-        'stylestr' determines: textstyle, foreground, background-color."""
+        'stylestr' determines: textstyle, foreground, background-color
+        (example: bold red text on default background: 'br-').
+
+        Arguments:
+            string [string]:
+                string to style with ANSI-escape sequences
+            stylestr [string]:
+                three byte string to define the style:
+                textstyle:
+                    - default; b bold; t grayed/transparent; i italic;
+                    u underlined
+                foreground:
+                    - default; k black; r red; g green; y yellow; b blue;
+                    m magenta; c cyan; w white
+                background:
+                    same as foreground
+        Returns:
+            string [string]:
+                input string decorated with ANSI-escape sequences
+        """
         # default, bold, greyed, italic, underlined
         attr = {"-": "0", "b": "1", "t": "2", "i": "3", "u": "4"}
         # black, red, green, yellow, blue, magenta, cyan, white, default
@@ -256,14 +307,19 @@ try:
 
 except AssertionError:
     def ascii_styled(string, stylestr):
-        """Return input 'string' if ANSI escape sequences are not supported"""
+        """Return input 'string' if ANSI escape sequences are not supported,
+        'stylestr' is dummy variable for compatibility
+        """
         return string
 
 
 def check_system_lock():
     """Test if a lock file is present in the THELI home folder and exit, if so.
     Can be used to permit multiple instances of THELI which would interfer by
-    working on the same configuration files."""
+    working on the same configuration files.
+
+    Arguments: None, Returns: None
+    """
     if os.path.exists(LOCKFILE):
         print()
         print(ascii_styled("ERROR:  ", "br-"),
@@ -274,7 +330,10 @@ def check_system_lock():
 
 
 def remove_temp_files():
-    """Remove temporary files in THELI home folder from previous reduction."""
+    """Remove temporary files in THELI home folder from previous reduction.
+
+    Arguments: None, Returns: None
+    """
     for tempfile in os.listdir(DIRS["TEMPDIR"]):
         try:
             os.remove(os.path.join(DIRS["TEMPDIR"], tempfile))
@@ -283,8 +342,16 @@ def remove_temp_files():
 
 
 def get_crossid_radius(pixscale):
-    """Estimate a reasonable radius for cross correlation sources in scamp.
-    Scales with pixel scale of the chip."""
+    """Estimate a reasonable radius for cross correlating sources in scamp.
+    Scales with pixel scale of the chip.
+
+    Arguments:
+        pixscale [float]:
+            pixel scale of the chip from which radius is calculated
+    Returns:
+        crossid [float]:
+            cross correlation radius for scamp
+    """
     if 0.2 <= pixscale < 0.7:
         return 2.0
     elif pixscale >= 0.7:
@@ -294,10 +361,23 @@ def get_crossid_radius(pixscale):
 
 
 def list_filters(mainfolder, folder, instrument):
-    # in the unsplitted files, the filter keyword is not standard, treat
-    # instruments differently
-    # this function is not very nice, as all instruments must be implemented
-    # manually, maybe the coadd->config source code helps
+    """Scans a folder for FITS images and tries to extract the filters used
+    during observation from the header. For detection in unsplitted (original)
+    files, the key words and string conversion have to be implemented manually.
+
+    Arguments:
+        mainfolder [string]:
+            path to folder containing 'folder'
+        folder [string]:
+            subfolder of mainfolder, containing FITS images
+        instrument [string]:
+            THELI identification string of the used instrument
+    Returns:
+        filters [list]:
+            unique list of filters found in the FITS headers
+
+    Note: The current implementation is not very flexible
+    """
     if instrument not in INSTRUMENTS:
         raise ValueError("instrument '%s' is not defined" % instrument)
     folder = os.path.join(mainfolder, folder)
@@ -306,33 +386,31 @@ def list_filters(mainfolder, folder, instrument):
     for file in os.listdir(folder):
         path = os.path.join(folder, file)
         if os.path.isfile(path) and path.endswith(FITS_EXTENSIONS):
-            # ACAM@WHT
-            if instrument == "ACAM@WHT":
-                try:
+            try:  # splitted image image with standard THELI header
+                new_filter = get_FITS_header_values(path, ["FILTER"])[0]
+            except KeyError:  # original raw file -> manual implementation
+                # ACAM@WHT
+                if instrument == "ACAM@WHT":
                     allfilters = get_FITS_header_values(path, ["ACAMFILT"])[0]
                     filter1, filter2 = allfilters.split("+")
                     if filter1 == "CLEAR":
                         new_filter = "+" + filter2
                     else:
                         new_filter = "+" + filter1
-                except KeyError:
-                    new_filter = get_FITS_header_values(path, ["FILTER"])[0]
-            # GMOS-S-HAM@GEMINI
-            elif instrument in ("GMOS-S-HAM@GEMINI", "GMOS-S-HAM_1x1@GEMINI"):
-                try:
+                # GMOS-S-HAM@GEMINI
+                elif instrument in ("GMOS-S-HAM@GEMINI",
+                                    "GMOS-S-HAM_1x1@GEMINI"):
                     filter1, filter2 = get_FITS_header_values(
                         path, ["FILTER1", "FILTER2"])
                     if "open" in filter1:
                         new_filter = filter2
                     else:
                         new_filter = filter1
-                except KeyError:
-                    new_filter = get_FITS_header_values(path, ["FILTER"])[0]
-            # instrument not implemented
-            else:
-                raise NotImplementedError(
-                    "instrument '%s' has no " % instrument +
-                    "implementation of filter keyword")
+                # instrument not implemented
+                else:
+                    raise NotImplementedError(
+                        "instrument '%s' has no " % instrument +
+                        "implementation of filter keyword")
             filters.add(new_filter)
     # check result
     if len(filters) == 0:
@@ -341,23 +419,44 @@ def list_filters(mainfolder, folder, instrument):
 
 
 def extract_tag(filename):
-    # original -> None, splitted -> '', else -> tag without chip number
+    """Extract the THELI progess tag from the filename of an image. Tag does
+    not contain the chip number in case of a splitted image (example:
+    calibrated 1st chip with background model subtracted: image_1OFCB -> OFCB)
+
+    Arguments:
+        filename [string]:
+            valid path to a FITS image
+    Returns
+        tag [string]:
+            'none' in case of raw image, '' (empty) in case of splitted image,
+            'OFC' + any combination of ' BHCDP' for images after calibration,
+            additinal '.sub' for a sky subtracted version of that image
+    """
     fname, ext = os.path.splitext(os.path.split(filename)[1])
-    split = fname.rsplit("_", 1)
-    if len(split) == 1:
-        return 'none'  # original unsplitted file
+    try:  # tag is separated by an underscore
+        base, tag = fname.rsplit("_", 1)
+    except ValueError:
+        return 'none'  # raw image
+    # images that contain underscore could be still raw image
     if all(char.isdigit() for char in split[1]):
-        try:
+        try:  # splitted images have an entry in the header key word 'HISTORY'
             if "mefsplit" in get_FITS_header_values(filename, ["HISTORY"])[0]:
                 return ''  # splitted image
         except Exception:
-            # raise exception as e
-            return 'none'  # original unsplitted file
-    # have tag with chip number and flags -> return flags only
+            return 'none'  # raw image
+    # any other: have chip number + tag -> return tag only
     return ''.join([i for i in split[1] if not i.isdigit()])
 
 
 def natural_sort(tosort):
+    """Natural sort algorithm, treating digits in strings as numbers
+    Arguments:
+        tosort [list like]:
+            list to sort
+    Returns:
+        sorted [list]:
+            sorted list
+    """
     def alphanum_key(key):
         return [int(c) if c.isdigit() else c.lower()
                 for c in split('([0-9]+)', key)]
@@ -365,6 +464,16 @@ def natural_sort(tosort):
 
 
 def sexagesimal_to_degree(sexagesimal_posangle):
+    """Converts astronomical coordinate from sexagesimal representation
+    (RA: HH:MM:SS, DEC: DD:MM:SS) to degrees (RA, DEC)
+
+    Arguments:
+        sexagesimal_posangle [2-dim tuple of strings]:
+            tuple (RA, DEC) with coordinates in sexagesimal format
+    Returns:
+        degrees [2-dim tuple of float]:
+            tuple (RA, DEC) with coordinate in degrees
+    """
     ra, dec = sexagesimal_posangle
     ra = ra.replace(":", " ").split()
     h, m, s = [float(i) for i in ra]
@@ -376,7 +485,16 @@ def sexagesimal_to_degree(sexagesimal_posangle):
 
 
 def degree_to_sexagesimal(degree_posangle):
-    # tested
+    """Converts astronomical coordinate from degrees (RA, DEC) to sexagesimal
+    representation (RA: HH:MM:SS, DEC: DD:MM:SS)
+
+    Arguments:
+        degrees [2-dim tuple of float]:
+            tuple (RA, DEC) with coordinate in degrees
+    Returns:
+        sexagesimal_posangle [2-dim tuple of strings]:
+            tuple (RA, DEC) with coordinates in sexagesimal format
+    """
     ra, dec = degree_posangle
     h, m = divmod(ra, 15)
     h = divmod(h, 24)[1]
@@ -391,11 +509,27 @@ def degree_to_sexagesimal(degree_posangle):
 
 
 def get_posangle(headerfolder):
+    """Compute the position angle / the image rotation with respect to WCS for
+    swarp from a set of header files for the coadded image. If no solution is
+    found in the headers -999 is returned.
+
+    Arguments:
+        headerfolder [string]:
+            valid path to folder, containing scamp header files
+    Returns:
+        posangle [float]:
+            position angle for the correct rotation of the coadded image
+    """
+    # grap a scamp header file from folder
     for head in os.listdir(headerfolder):
         if head.endswith("head"):
             headerfile = os.path.join(headerfolder, head)
+            break
+    # use get_posangle from the THELi binaries
     command = ["get_posangle", "-c", "0", "0", "0", "0"]
     with open(headerfile) as head:
+        # read the header file and scan for linear projection matrix
+        # replace the default "0" in 'command' with the matrix elements 'CDi_j'
         for line in head:
             try:
                 var, val = line.split("=", 1)
@@ -410,6 +544,7 @@ def get_posangle(headerfolder):
                 command[4] = val.strip()
             if var.strip() == "CD2_2":
                 command[5] = val.strip()
+    # grap the output of get_posangle and try to convert it to float
     call = subprocess.Popen(
         command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         shell=False, cwd=DIRS["BIN"])
@@ -421,6 +556,9 @@ def get_posangle(headerfolder):
 
 
 def retrieve_object():
+    """This function will query a database and try to fetch coordinates from an
+    object identifier
+    """
     raise NotImplementedError
 
 
