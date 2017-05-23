@@ -11,13 +11,14 @@ from inspect import stack
 from .base import DIRS, LOCKFILE, LOGFILE, check_system_lock
 
 
-ERR_KEYS = ["*Error*"]  # additional errors
-ERR_EXCEPT = []
+ERR_KEYS = ["*Error*"]  # error keywords
+ERR_EXCEPT = []  # keywords that are identified as error, but are not
 # get keywords for errors and exceptions in logfile from Theli GUI source file
 theliform_path = os.path.join(DIRS["PIPESOFT"], "gui", "theliform.ui.h")
 with open(theliform_path) as cc:
     for line in cc.readlines():
         line = line.strip()
+        # extract the strings from the c source file
         if line.startswith("errorlist"):
             statement = line.split('"', 1)[1].rsplit('"', 1)[0]
             ERR_KEYS.append(statement.replace('\\"', '"'))
@@ -29,17 +30,42 @@ if len(ERR_KEYS) == 1 or len(ERR_EXCEPT) == 0:
 
 
 def checked_call(script, arglist=None, parallel=False, **kwargs):
-    # test if the system is locked already
-    check_system_lock()
+    """Set up shell environment, call GUI script, capture log and scan it for
+    possible errors.
+
+    Arguments:
+        script [string]:
+            name of script to call
+        arglist [list of strings]:
+            list of arguments parsed to script
+        parallel [bool]:
+            weather script is run parallel using 'parallel_manager.sh'
+        verb [ing]:
+            verbosity level: 0: no output, 1: warnings messages, 2: full log
+        env [dict]:
+            dictionary of environment variables (see os.environ)
+        ignoreerr [list of strings]:
+            error keywords to ignore in log
+        ignoremsg [list of strings]:
+            message to display, if an error is ignored in log
+    Returns:
+        return_code [2-dim tuple]:
+            line number and line text in which error occured, if no error
+            occured, return (0, "")
+        warnings [list of 2-dim tuple]:
+            for each ignored error it contains a tuple with line and message
+            to disply for an ignored error
+    """
+    check_system_lock()  # test if any other instance is running
     try:
         # create a lock file, prohibiting the system to run a parallel task
         os.system("touch %s 2>&1" % LOCKFILE)
-        # parse kwargs
+        # parse kwargs: verbosity, environment, errors to ignore
         verbosity = kwargs["verb"] if "verb" in kwargs else 1
         env = kwargs["env"] if "env" in kwargs else os.environ.copy()
         ignoreerr = kwargs["ignoreerr"] if "ignoreerr" in kwargs else []
         ignoremsg = kwargs["ignoremsg"] if "ignoremsg" in kwargs else []
-        # check requested script
+        # check requested script presence
         scriptdir = DIRS["SCRIPTS"]
         if not os.path.exists(os.path.join(scriptdir, script)):
             raise FileNotFoundError("script does not exist:", script)
@@ -54,6 +80,7 @@ def checked_call(script, arglist=None, parallel=False, **kwargs):
         call = subprocess.Popen(
             cmdstr, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             shell=False, cwd=scriptdir, env=env)
+        # highest verbosity level, dump all logs to stdout and log files
         if verbosity > 1:
             sys.stdout.write("\n")
             # read bytewise from pipe, buffer till newline, flush to stdout
@@ -62,20 +89,20 @@ def checked_call(script, arglist=None, parallel=False, **kwargs):
             while call.poll() is None:
                 out = call.stdout.read(1)
                 line += out
-                if out == b'\n':
+                if out == b'\n':  # if newline, flush line to stdout
                     strline = line.decode("utf-8")
                     sys.stdout.write(strline)
                     sys.stdout.flush()
                     stdout.append(strline.rstrip())
                     line = b""
-            # capture unhandled buffer
+            # capture remaining buffer
             if out != b'\n':
                 line += b'\n'
                 strline = line.decode("utf-8")
                 sys.stdout.write(strline)
                 sys.stdout.flush()
                 stdout.append(strline.rstrip())
-        else:
+        else:  # capture log only
             stdout = call.communicate()[0].decode("utf-8").splitlines()
             stdout.append("")
     except Exception as e:
@@ -85,12 +112,16 @@ def checked_call(script, arglist=None, parallel=False, **kwargs):
         return_code = (0, "")
         warnings = []
         for i, line in enumerate(stdout, 1):
+            # check if line contains error message
             got_error = any(err in line for err in ERR_KEYS)
             is_false_detection = any(err in line for err in ERR_EXCEPT)
+            # check if the error should explicitly be ignored
             if got_error and not is_false_detection:
+                # error is valid
                 if not any(ignore in line for ignore in ignoreerr):
                     return_code = (i, line)
                     break
+                # error will be handled as warning
                 else:
                     for i, ignore in enumerate(ignoreerr, 1):
                         msg = ignoremsg[i - 1] if len(ignoremsg) >= i else ""
@@ -117,6 +148,11 @@ def checked_call(script, arglist=None, parallel=False, **kwargs):
 
 
 class Scripts(object):
+    """Class containing wrapper functions for most common scripts provided
+    by the THELI GUI. For each shell script argument there is a function
+    argument and **kwargs to parse additional parameters to 'checked_call'.
+    The functions are not further commented and usually take the main folder
+    and data subfolders (like science, bias, flat, ... folder) as arguments."""
 
     @staticmethod
     def sort_rawdata(maindir, **kwargs):
