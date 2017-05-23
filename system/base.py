@@ -1033,13 +1033,3 @@ class Parameters(object):
                 remain_keys += " '%s'" % key
 
             raise KeyError("could not match all parameters:" + remain_keys)
-
-    # def preset(self, instrument):
-    #     """Set instrument specific default parameters"""
-    #     self.reset()
-    #     if instrument not in INSTRUMENTS:
-    #         raise ValueError("instrument '%s' is not defined" % instrument)
-    #     try:
-    #         self.set(deepcopy(self.param_presets[instrument]))
-    #     except KeyError:
-    #         pass
