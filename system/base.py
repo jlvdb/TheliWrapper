@@ -947,28 +947,49 @@ class Folder(object):
 
 
 class Parameters(object):
-    # keep parameter files for quicker modifications
+    """Controlls the THELI configuration files for easy reading, writing and
+    restoring default values.
+
+    Arguments:
+        preparse [dict]:
+            parameter dict (key: variable name, value: value) to initialize
+            configureation files.
+    """
+
+    # keep the three configuration files in memory as a list
+    # each list element is a line of the files
     param_sets = {"param_set1.ini": [],
                   "param_set2.ini": [],
                   "param_set3.ini": []}
 
     def __init__(self, preparse={}):
         super(Parameters, self).__init__()
-        """restore default parameters on initialization"""
         if type(preparse) is not dict:
             raise ValueError("preparse must be of type 'dict'")
         if len(preparse) == 0:
-            self.reset()
+            self.reset()  # use default (minimal) configuration file
         else:
             self.set(preparse)
 
     def _modify_parameter_file(self, file_line_list, replace_dict):
-        """Modify Theli-parameters of the param_set.ini that are kept in memory
-        (file_line_list). Changes are parsed as
-        replace_dict[PARAMETER] = VALUE."""
-        if len(replace_dict) == 0:
+        """Update THELI-parameters files.
+
+        Arguments:
+            file_line_list [list]:
+                line list of a parameter file to update
+            replace_dict [dict]:
+                key (=variable name) and values to update in the parameter file
+        Returns:
+            file_line_list [list]:
+                updated version of the input
+            replace_dict [dict]:
+                updated version of the input, from which each successfully
+                updated parameter is removed
+        """
+        if len(replace_dict) == 0:  # nothing to do
             return file_line_list, {}
         for i in range(len(file_line_list)):
+            # test every line if it contains any of the parameters to update
             for key in replace_dict:
                 if file_line_list[i].startswith(key + "="):
                     # if line begins with parameter name (key), replace line
@@ -978,17 +999,18 @@ class Parameters(object):
                     # remove the parameter from the input dictionary
                     replace_dict.pop(key)
                     break
-        # return replace_dict to check, if all parameters were matched
+        # if all parameters were matched, replace_dict is empty
         return file_line_list, replace_dict
 
     def reset(self):
-        """Restore default Theli-parameter files from backup"""
+        """Restore default THELI-parameter files from default version in HOME
+        folder"""
         # read backup of system specific values -> pack as dictionary
         sysdefault = {}
         with open(os.path.join(DIRS["PY2THELI"], "sys.default")) as d:
             for line in d.readlines():
                 if "=" in line:
-                    key, val = line.split("=", 1)  # split: param-name, value
+                    key, val = line.split("=", 1)
                     sysdefault[key] = val.strip()
         # read defaults and write new parameter files
         for n in (1, 2, 3):
@@ -996,17 +1018,20 @@ class Parameters(object):
             with open(os.path.join(DIRS["PY2THELI"], fname + ".default")) as f:
                 # first file contains system dependent lines, treat separately
                 if n == 1:
-                    # insert system defaults
+                    # default file 1 and insert system defaults
                     self.param_sets[fname], remainder = \
                         self._modify_parameter_file(f.readlines(), sysdefault)
-                # for file 2 and 3 just replace with backup file content
+                # copy content of default file 2 and 3
                 else:
                     self.param_sets[fname] = f.readlines()
+            # write new files to disk
             with open(os.path.join(DIRS["PIPEHOME"], fname), 'w') as f:
                 for line in self.param_sets[fname]:
                     f.write(line)
 
     def get(self, key):
+        """Scan the configuration files for variable name 'key' and return
+        its value."""
         for file in self.param_sets:
             for line in self.param_sets[file]:
                 if line.startswith(key):
@@ -1014,22 +1039,29 @@ class Parameters(object):
         raise ValueError("found no parameter matching keyword '%s'" % key)
 
     def set(self, replace):
-        """Wrapper for 'modify_lines_from_dict'. Write changes to theli-
-        parameter file. Check, if any unmatched parameter is left"""
+        """Update given parameters and write changes to THELI-configuration
+        files to disk.
+
+        Arguments:
+            replace_dict [dict]:
+                key (=variable name) and values to update in the parameter file
+        Returns:
+            None
+        """
         # test if the system is locked already
-        check_system_lock()
-        if replace == {}:
+        check_system_lock()  # if yes exit to not change the parameter settings
+        if replace == {}:  # nothing to do
             return
         for fname, fcontent in self.param_sets.items():
-            # apply changes
+            # apply changes and write to disk
             fcontent, replace = self._modify_parameter_file(fcontent, replace)
             with open(os.path.join(DIRS["PIPEHOME"], fname), 'w') as f:
                 for line in fcontent:
                     f.write(line)
-        # issue warning, if any parameter (key) is left
+        # check if all parameters were matched to variable names
         if replace != {}:
             remain_keys = ""
             for key in replace:
-                remain_keys += " '%s'" % key
-
-            raise KeyError("could not match all parameters:" + remain_keys)
+                remaining_keys += " '%s'" % key
+            raise KeyError(
+                "could not match these parameters:" + remaining_keys)
