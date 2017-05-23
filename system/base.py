@@ -86,6 +86,7 @@ for fpath in splitting_scripts:
     # remove path, "process_split_" and extension -> instrument name
     instrument = os.path.basename(fpath).split("_", 2)[-1]
     instrument = os.path.splitext(instrument)[0]
+    available_instruments.append(instrument)
 # figure out the file path of the instrument .ini file
 chipprops = namedtuple(
     'chipprops', ['SIZEX', 'SIZEY', 'NCHIPS', 'TYPE', 'PIXSCALE'])
@@ -438,14 +439,14 @@ def extract_tag(filename):
     except ValueError:
         return 'none'  # raw image
     # images that contain underscore could be still raw image
-    if all(char.isdigit() for char in split[1]):
+    if all(char.isdigit() for char in tag):
         try:  # splitted images have an entry in the header key word 'HISTORY'
             if "mefsplit" in get_FITS_header_values(filename, ["HISTORY"])[0]:
                 return ''  # splitted image
         except Exception:
             return 'none'  # raw image
     # any other: have chip number + tag -> return tag only
-    return ''.join([i for i in split[1] if not i.isdigit()])
+    return ''.join([i for i in tag if not i.isdigit()])
 
 
 def natural_sort(tosort):
@@ -966,9 +967,8 @@ class Parameters(object):
         super(Parameters, self).__init__()
         if type(preparse) is not dict:
             raise ValueError("preparse must be of type 'dict'")
+        self.reset()  # use default (minimal) configuration file
         if len(preparse) == 0:
-            self.reset()  # use default (minimal) configuration file
-        else:
             self.set(preparse)
 
     def _modify_parameter_file(self, file_line_list, replace_dict):
@@ -1060,7 +1060,7 @@ class Parameters(object):
                     f.write(line)
         # check if all parameters were matched to variable names
         if replace != {}:
-            remain_keys = ""
+            remaining_keys = ""
             for key in replace:
                 remaining_keys += " '%s'" % key
             raise KeyError(
