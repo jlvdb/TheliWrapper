@@ -1,5 +1,5 @@
 """
-This is a command line interface to the wrapper for the THELI GUI 
+This is a command line interface to the wrapper for the THELI GUI
 scripts, based on the THELI package for astronomical image reduction.
 """
 
@@ -35,7 +35,11 @@ except AssertionError:
 class ActionParseFile(argparse.Action):
     """Read a parameter file with optinal arguments and parse it to the
     parameter name space. If the file (-path) does not exist, look into the
-    ../preset folder"""
+    ../preset folder
+    
+    Arguments:
+        arguments are parsed by argparse
+    """
 
     def __init__(self, option_strings, dest, **kwargs):
         super(ActionParseFile, self).__init__(option_strings, dest, **kwargs)
@@ -83,7 +87,11 @@ class ActionHelpJob(argparse.Action):
     """Print job help on screen, if --help-jobs is used and exit. Displays the
     job abbreviations for use with JOBLIST, short description and help text.
     If a job abbriviation is given as optional parameter, list the THELI
-    parameters that influence this job."""
+    parameters that influence this job.
+
+    Arguments:
+        arguments are parsed by argparse
+    """
 
     def __init__(self, option_strings, dest, nargs='?', **kwargs):
         super(ActionHelpJob, self).__init__(
@@ -127,7 +135,11 @@ class ActionHelpTheli(argparse.Action):
     """Print job help on screen, if --help-parameters is used. Displays the
     available THELI parameters, the parameter type and choices and help text.
     If a search string is given, list the parameters that contain this string
-    either in the name or in the help text."""
+    either in the name or in the help text.
+
+    Arguments:
+        arguments are parsed by argparse
+    """
 
     def __init__(self, option_strings, dest, nargs='?', **kwargs):
         super(ActionHelpTheli, self).__init__(
@@ -139,7 +151,19 @@ class ActionHelpTheli(argparse.Action):
 
     def highlight_pattern(self, string, pattern, h_all=False):
         """Highlightes first occurence of the search pattern in string or full
-        string. Reterns input string if pattern is None or not in string."""
+        string. Reterns input string if pattern is None or not in string.
+
+        Arguments:
+            string [string]:
+                string in which the first occurence of 'pattern' is highlighted
+            pattern [string]:
+                pattern to search in 'string'
+            h_all [bool]:
+                weather the whole string is highlighted or just the pattern
+        Returns:
+            string [string]:
+                'string' with 'pattern' highlighted with ANSI-escape sequences
+        """
         if pattern is None:
             return string
         try:
@@ -157,9 +181,20 @@ class ActionHelpTheli(argparse.Action):
             return string
 
     def format_argument(self, arg, param):
-        """Format a help string for a THELI argument (arg) from an entry in
-        parse_parameters (param), including possible choices (if any) and data
-        type."""
+        """Formats the help text for a THELI argument (arg) from an entry in
+        parse_parameters (param). Line breaks and indentation are formatted
+        according to terminal size.
+
+        Arguments:
+            arg [string]:
+                THELI command line argument (e.g. "--ref-cat")
+            param [dict]:
+                specifies the properties of command line argument 'arg' like
+                choices, default, meta variable or help text
+        Returns:
+            help [string]:
+                formatted help text
+        """
         # indent argument by 2
         string = "  %s " % arg
         # if argument has choices
@@ -203,8 +238,19 @@ class ActionHelpTheli(argparse.Action):
         return string + helpstr
 
     def print_help(self, pattern, match_jobs_only=False):
-        """Generate the help and print it to stdout. Filter the results, if
-        --help-parameters is given with a filter pattern."""
+        """Generates the help text and prints it to stdout. Filter the results,
+        if --help-parameters is given with a filter pattern.
+
+        Arguments:
+            pattern [string]:
+                optional pattern to filter the displayed entries of the help
+                (default: None)
+            match_jobs_only [bool]:
+                applies search pattern to job abbreviation instead of argument
+                name and help text
+        Returns:
+            None
+        """
         helpdict = copy(parse_parameters)
         # remove entries from helpdict, which do not contain the pattern either
         # argument name or help text
@@ -252,7 +298,8 @@ class ActionHelpTheli(argparse.Action):
             print()
 
     def __call__(self, parser, namespace, pattern, option_string=None):
-        """Print the THELI parameter help and exit."""
+        """Print the THELI parameter help and exit.
+        """
         print(Parser.format_usage())
         infostr = "Grouped list of additional THELI parameters"
         if pattern is not None:
@@ -266,7 +313,11 @@ class ActionHelpTheli(argparse.Action):
 
 class ActionVersion(argparse.Action):
     """Print version of the THELI installation, the GUI scripts and the
-    command line wrapper and exit."""
+    command line wrapper and exit.
+
+    Arguments:
+        arguments are parsed by argparse
+    """
 
     def __init__(self, option_strings, dest, nargs=0, **kwargs):
         super(ActionVersion, self).__init__(
@@ -287,7 +338,16 @@ class ActionVersion(argparse.Action):
 
 def TypeNumberEmpty(type):
     """Test input value for being 'type', but also accept an empty string to
-    represent unset parameters (corresponding to emtpy GUI line edits)"""
+    represent unset parameters (corresponding to emtpy GUI line edits).
+
+    Arguments:
+        type [type]:
+            specifies the type (int, float, ...) the input argument has to obey
+    Returns:
+        type_text [function]:
+            function that takes 'value' as argument and tests, if it is either
+            an empty string or of type 'type'
+    """
     def type_test(value):
         if value == '':
             return value
@@ -304,9 +364,12 @@ def TypeNumberEmpty(type):
 class TheliParser(argparse.ArgumentParser):
     """Argument parser with custom parsing method that handles the argument
     conversion. Maps choices to internal values, creates the list of jobs to
-    execute and a valid THELI parameter dictionary."""
+    execute and a valid THELI parameter dictionary.
+    """
 
     def parse_theli_args(self):
+        """Extension of the default argparse.ArgumentParser.parse_args()
+        """
         # invoke default argument parser
         parsedargs = self.parse_args()
         # convert choices to internal parameter values
