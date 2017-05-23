@@ -65,62 +65,69 @@ for key in DIRS:
     DIRS[key] = os.path.normpath(DIRS[key])
 LOCKFILE = os.path.join(DIRS["PY2THELI"], "theli.lock")
 LOGFILE = os.path.join(DIRS["PY2THELI"], "theli.log")
-# separate by types
+# separate scripts and binaries from folders
 for key in tuple(DIRS.keys()):
     if key.startswith("P_"):
         CMDTOOLS[key] = DIRS.pop(key)
     if key.startswith("S_"):
         CMDSCRIPTS[key] = DIRS.pop(key)
 
-# collect instrument data, each instrument should have a splitting script
+# Relevant data to read from instrument .ini files:
+# number of chips, x- and y-dimension of first chip (assuming first one is
+# representative for mosaic), type (optical, NIR, MIR) and pixel scale
 INSTRUMENTS = {}
+# splitting script: "process_split_[instrument@telescope]" in scripts folder
 splitting_scripts = [
     os.path.join(DIRS["SCRIPTS"], s) for s in os.listdir(DIRS["SCRIPTS"])
     if os.path.isfile(os.path.join(DIRS["SCRIPTS"], s)) and
-    s.startswith("process_split_")]
+    s.startswith("process_split_") and s != "process_split_tiff.sh"]
 available_instruments = []
 for fpath in splitting_scripts:
     # remove path, "process_split_" and extension -> instrument name
     instrument = os.path.basename(fpath).split("_", 2)[-1]
     instrument = os.path.splitext(instrument)[0]
-    # remove other scripts that made it into the list
-    if instrument[0].isupper():
-        available_instruments.append(instrument)
-# check the instrument definition files
+# figure out the file path of the instrument .ini file
 chipprops = namedtuple(
     'chipprops', ['SIZEX', 'SIZEY', 'NCHIPS', 'TYPE', 'PIXSCALE'])
 for instrument in available_instruments:
-    # instrument data can be in different locations, depending on tpye in GUI
-    if_comm = os.path.join(
-        DIRS["SCRIPTS"], "instruments_commercial", "%s.ini" % instrument)
-    if_prof = os.path.join(
+    # test the three possibilities: commercial, professional, user defined
+    if_prof = os.path.join(  # professional instruments
         DIRS["SCRIPTS"], "instruments_professional", "%s.ini" % instrument)
-    if_user = os.path.join(
+    if_comm = os.path.join(  # commercial instruments
+        DIRS["SCRIPTS"], "instruments_commercial", "%s.ini" % instrument)
+    if_user = os.path.join(  # user defined instruments
         DIRS["PIPEHOME"], "instruments_user", "%s.ini" % instrument)
-    if os.path.exists(if_comm):
-        inifile = if_comm
-    elif os.path.exists(if_prof):
+    if os.path.exists(if_prof):
         inifile = if_prof
+    elif os.path.exists(if_comm):
+        inifile = if_comm
+    elif os.path.exists(if_user):
+        inifile = if_user
     else:
-        # data possibly incomplete -> remove instrument from final list
+        # data possibly incomplete -> instrument will not be in final list
         continue
     with open(inifile) as ini:
         content = ini.readlines()
     data = {}
     # read the shell variables of interest from the instrument file
     for line in content:
+        # example format for single chip:
+        # SIZEX=([1]=2044)
+        # example format for mosaic:
+        # SIZEX=([1]=2038 [2]=2038 [3]=2038 [4]=2038 [5]=2038 [6]=2038, ...)
         if "SIZEX=" in line:
             n = line.strip().split("=")
             if len(n) == 3:
                 data["SIZEX"] = int(n[2].strip("()[]"))
             else:
-                data["SIZEX"] = int(n[2].split()[0])
+                data["SIZEX"] = int(n[2].split()[0])  # value of first chip
         if "SIZEY=" in line:
             n = line.strip().split("=")
             if len(n) == 3:
                 data["SIZEY"] = int(n[2].strip("()[]"))
             else:
-                data["SIZEY"] = int(n[2].split()[0])
+                data["SIZEY"] = int(n[2].split()[0])  # value of first chip
+        # format: NCHIPS/TYPE/PIXSCALE=X
         if "NCHIPS=" in line:
             n = line.strip().split("=")
             data["NCHIPS"] = int(n[1])
@@ -128,95 +135,101 @@ for instrument in available_instruments:
             data["TYPE"] = line.strip().split("=")[1]
         if "PIXSCALE=" in line:
             data["PIXSCALE"] = float(line.strip().split("=")[1])
-    if "TYPE" not in data:  # assume optical
+    # type may not be defined: assume optical
+    if "TYPE" not in data:
         data["TYPE"] = "OPT"
+    # if data is incomplete, we cannot use this instrument
     if len(data) == len(chipprops._fields):
         INSTRUMENTS[instrument] = chipprops(
             data["SIZEX"], data["SIZEY"], data["NCHIPS"], data["TYPE"],
             data["PIXSCALE"])
+    # TODO: raise error if data is incomplete for user defined instrument
 
 
 # find method to read fits file headers:
-# try astropy.io.fits
-# then pyfits
-# then dfits (from THELI binaries)
+# try importing astropy.io.fits or pyfits
 try:
     from astropy.io import fits as pyfits
-
-    def get_FITS_keys(file, keys, extension=-1):
+    __pyfits_success__ = True
+except ImportError:
+    try:
+        import pyfits
+        __pyfits_success__ = True
+    except ImportError:
+        __pyfits_success__ = False
+# define function to read header values: if pyfits import failed, use custom
+# function based on command line tool 'defits' (from THELI package)
+if __pyfits_success__:
+    def get_FITS_header_values(file, keys, extension=-1):
+        """Opens FITS image 'file' and checks, if a list of key words ('keys')
+        is found in a specified 'extension' of the FITS image. By default all
+        extensions are checked, if they contain the key words.
+        WARNING: if keys occur in multiple extensions, only the last occurence
+        is returned."""
+        # list to hold results in order as keys are specified
         values = [None] * len(keys)
         with pyfits.open(file) as fits:
+            # if no extension is defined, iterate through all and search
             iter_ext = range(len(fits)) if extension == -1 else [extension]
             for i in iter_ext:
+                # check if table contains any of the key words
                 for k, key in enumerate(keys):
                     try:
                         values[k] = (fits[i].header[key])
                     except KeyError:
                         continue
+        # if any key word did not appear in extension(s), its value is None
         for i, val in enumerate(values):
             if val is None:
                 raise KeyError("Keyword '%s' not found." % keys[i])
         return values
-
-except ImportError:
-    try:
-        import pyfits
-
-        def get_FITS_keys(file, keys):
-            values = [None] * len(keys)
-            with pyfits.open(file) as fits:
-                for i in range(len(fits)):
-                    for k, key in enumerate(keys):
-                        try:
-                            values[k] = (fits[i].header[key])
-                        except KeyError:
-                            continue
-            for i, val in enumerate(values):
-                if val is None:
-                    raise KeyError("Keyword '%s' not found." % keys[i])
-            return values
-
-    except ImportError:
-        # use dfits from THELI binaries to read full header
-        def get_FITS_keys(file, keys, extension=-1):
-            # read the headers
-            cmdstr = "%s -x %d %s" % (CMDTOOLS["P_DFITS"], extension + 1, file)
-            call = subprocess.Popen(cmdstr, shell=True, stdout=subprocess.PIPE)
-            stdout = call.communicate()[0].decode("utf-8").splitlines()
-            # make list of values from requested keywords
-            values = []
-            for key in keys:
-                # some keywords may be repeated over several lines, join these
-                subvals = []
-                for line in stdout:
-                    if line.startswith(key):
-                        subvals.append(line)
-                # if no matching key word is found
-                if subvals == []:
-                    raise KeyError("Keyword '%s' not found." % key)
-                values.append("\n".join(subvals))
-            # deduce the value type from the string pattern and convert it
-            for i in range(len(values)):
-                # test for endtype keywords, e.g. HISTORY
-                splited = values[i].split("=", 1)
-                if len(splited) == 1:
-                    continue
-                # ordinary keywords
+else:
+    def get_FITS_header_values(file, keys, extension=-1):
+        """Opens FITS image 'file' and checks, if a list of key words ('keys')
+        is found in a specified 'extension' of the FITS image. By default all
+        extensions are checked, if they contain the key words.
+        WARNING: if keys occur in multiple extensions, only the last occurence
+        is returned."""
+        # read the header from the stdout of 'dfits -x [extension]'
+        cmdstr = "%s -x %d %s" % (CMDTOOLS["P_DFITS"], extension + 1, file)
+        call = subprocess.Popen(cmdstr, shell=True, stdout=subprocess.PIPE)
+        stdout = call.communicate()[0].decode("utf-8").splitlines()
+        # make list of values from requested keywords
+        values = []
+        for key in keys:
+            # some keywords may be repeated over many lines, join these lines
+            subvals = []
+            for line in stdout:
+                if line.startswith(key):
+                    subvals.append(line)
+            # if no matching key word is found
+            if subvals == []:
+                raise KeyError("Keyword '%s' not found." % key)
+            values.append("\n".join(subvals))
+        # deduce the value type from the string pattern and convert it
+        for i in range(len(values)):
+            # special keywords like 'HISTORY' need no further processing
+            splited = values[i].split("=", 1)
+            if len(splited) == 1:
+                continue
+            # data keywords
+            else:
+                # some lines defining the image data type contain a comment
+                # which follows the value after a slash -> remove comment
+                splited = splited[1].split(" / ")[0].strip()
+                # strings are enclosed with with white spaces ('string     ')
+                if splited.startswith("'") and splited.endswith("'"):
+                    values[i] = splited.strip("'").strip()
+                # remaining types are either float or int -> convert type
+                elif "." in splited:
+                    values[i] = float(splited)
                 else:
-                    splited = splited[1].split(" / ")[0].strip()
-                    # strings are enclosed with 'string     ' with white spaces
-                    if splited.startswith("'") and splited.endswith("'"):
-                        values[i] = splited.strip("'").strip()
-                    # remaining types are either float or int
-                    elif "." in splited:
-                        values[i] = float(splited)
-                    else:
-                        values[i] = int(splited)
-            return values
+                    values[i] = int(splited)
+        return values
 
 
 # This is supposed to test if the terminal supports ANSI escape sequences.
-# If not define fall back function
+# If not, define fall back function without any effect
 try:
     # this might not cover all cases
     assert((sys.platform != 'Pocket PC' and
@@ -243,13 +256,14 @@ try:
 
 except AssertionError:
     def ascii_styled(string, stylestr):
-        """Return input string if ANSI escape sequences are not supported"""
+        """Return input 'string' if ANSI escape sequences are not supported"""
         return string
 
 
 def check_system_lock():
-    # test if the system is locked already, prevents parallel instances
-    # messing up the configuration files
+    """Test if a lock file is present in the THELI home folder and exit, if so.
+    Can be used to permit multiple instances of THELI which would interfer by
+    working on the same configuration files."""
     if os.path.exists(LOCKFILE):
         print()
         print(ascii_styled("ERROR:  ", "br-"),
@@ -260,7 +274,7 @@ def check_system_lock():
 
 
 def remove_temp_files():
-    # remove temporary files as they might belong to a different project
+    """Remove temporary files in THELI home folder from previous reduction."""
     for tempfile in os.listdir(DIRS["TEMPDIR"]):
         try:
             os.remove(os.path.join(DIRS["TEMPDIR"], tempfile))
@@ -269,6 +283,8 @@ def remove_temp_files():
 
 
 def get_crossid_radius(pixscale):
+    """Estimate a reasonable radius for cross correlation sources in scamp.
+    Scales with pixel scale of the chip."""
     if 0.2 <= pixscale < 0.7:
         return 2.0
     elif pixscale >= 0.7:
@@ -293,25 +309,25 @@ def list_filters(mainfolder, folder, instrument):
             # ACAM@WHT
             if instrument == "ACAM@WHT":
                 try:
-                    allfilters = get_FITS_keys(path, ["ACAMFILT"])[0]
+                    allfilters = get_FITS_header_values(path, ["ACAMFILT"])[0]
                     filter1, filter2 = allfilters.split("+")
                     if filter1 == "CLEAR":
                         new_filter = "+" + filter2
                     else:
                         new_filter = "+" + filter1
                 except KeyError:
-                    new_filter = get_FITS_keys(path, ["FILTER"])[0]
+                    new_filter = get_FITS_header_values(path, ["FILTER"])[0]
             # GMOS-S-HAM@GEMINI
             elif instrument in ("GMOS-S-HAM@GEMINI", "GMOS-S-HAM_1x1@GEMINI"):
                 try:
-                    filter1, filter2 = get_FITS_keys(
+                    filter1, filter2 = get_FITS_header_values(
                         path, ["FILTER1", "FILTER2"])
                     if "open" in filter1:
                         new_filter = filter2
                     else:
                         new_filter = filter1
                 except KeyError:
-                    new_filter = get_FITS_keys(path, ["FILTER"])[0]
+                    new_filter = get_FITS_header_values(path, ["FILTER"])[0]
             # instrument not implemented
             else:
                 raise NotImplementedError(
@@ -332,7 +348,7 @@ def extract_tag(filename):
         return 'none'  # original unsplitted file
     if all(char.isdigit() for char in split[1]):
         try:
-            if "mefsplit" in get_FITS_keys(filename, ["HISTORY"])[0]:
+            if "mefsplit" in get_FITS_header_values(filename, ["HISTORY"])[0]:
                 return ''  # splitted image
         except Exception:
             # raise exception as e
