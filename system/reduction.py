@@ -72,20 +72,20 @@ class Reduction(object):
             self.title = title
         # set the environment and the instrument
         self.theli_env = os.environ.copy()
-        if instrument in INSTRUMENTS.keys():
-            self.instrument = instrument
+        if instrument in INSTRUMENTS:
+            self.instrument = Instrument(instrument)
             self.theli_env['INSTRUMENT'] = instrument
-            self.nchips = INSTRUMENTS[self.instrument].NCHIPS
+            self.nchips = self.instrument.NCHIPS
         else:
             print(self)
-            self.display_error("instrument '%s' not recognized" % instrument)
+            self.display_error("instrument '%s' not implemented" % instrument)
             sys.exit(1)
         # specify number of threads to use and adjust maximum parallel frames
         self.set_cpus(ncpus)
         self.get_npara_max()
         # update the parameters file
         self.params = Parameters(parseparams)  # parse any default parameters
-        pixscale = INSTRUMENTS[self.instrument].PIXSCALE
+        pixscale = self.instrument.PIXSCALE
         crossid_rad = get_crossid_radius(pixscale)
         main_params = {'PROJECTNAME': title,
                        'NPARA': str(self.ncpus),
@@ -95,7 +95,7 @@ class Reduction(object):
         # get the filters of files present in the science folder
         try:
             self.filters = list_filters(
-                self.maindir, self.sciencedir.path, self.instrument)
+                self.maindir, self.sciencedir.path, self.instrument.NAME)
             self.active_filter = self.filters[0]
             main_params['V_COADD_FILTER'] = self.active_filter
             main_params['V_COADD_IDENT'] = self.active_filter
@@ -155,7 +155,7 @@ class Reduction(object):
             string += "\n"
         if hasattr(self, "instrument"):
             string += "{:{pad}}{:}\n".format(
-                "Instrument:", self.instrument, pad=PAD)
+                "Instrument:", self.instrument.NAME, pad=PAD)
         if self.maindir is not None:
             string += "{:{pad}}{:}\n".format(
                 "Main folder:", self.maindir, pad=PAD)
@@ -212,8 +212,7 @@ class Reduction(object):
             self.ncpus = 1
 
     def get_npara_max(self):
-        chipprop = INSTRUMENTS[self.instrument]
-        imsize = chipprop.SIZEX * chipprop.SIZEY * 4
+        imsize = self.instrument.SIZEX * self.instrument.SIZEY * 4
         RAM = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
         self.nframes = int(0.4 * RAM / imsize / self.ncpus)
 
@@ -343,7 +342,7 @@ class Reduction(object):
             # split images
             self.display_header(job_message)
             code = Scripts.process_split(
-                self.instrument, self.maindir, folder.path,
+                self.instrument.NAME, self.maindir, folder.path,
                 env=self.theli_env, verb=self.verbosity)
             self.check_return_code(code)
             if correct_xtalk:
@@ -679,7 +678,7 @@ class Reduction(object):
     def spread_sequence(self, ngroups, grouplen, params={}):
         self.params.set(params)
         job_message = "Grouping images"
-        if INSTRUMENTS[self.instrument].TYPE != "NIR":
+        if self.instrument.TYPE != "NIR":
             self.display_header(job_message)
             self.display_error(
                 "method only avaliable for NIR instruments", critical=False)
@@ -827,7 +826,7 @@ class Reduction(object):
     def merge_sequence(self, params={}):
         self.params.set(params)
         job_message = "Collecting images"
-        if INSTRUMENTS[self.instrument].TYPE != "NIR":
+        if self.instrument.TYPE != "NIR":
             self.display_header(job_message)
             self.display_error(
                 "method only avaliable for NIR instruments", critical=False)
@@ -874,7 +873,7 @@ class Reduction(object):
                         params={}):
         self.params.set(params)
         job_message = "Subtracting sky by chop-nod"
-        if INSTRUMENTS[self.instrument].TYPE != "MIR":
+        if self.instrument.TYPE != "MIR":
             self.display_header(job_message)
             self.error(
                 "method only avaliable for MIR instruments", critical=False)
@@ -1008,7 +1007,7 @@ class Reduction(object):
     def debloom_images(self, saturation=55000, redo=False, params={}):
         self.params.set(params)
         job_message = "Deblooming images"
-        if INSTRUMENTS[self.instrument].TYPE != "OPT":
+        if self.instrument.TYPE != "OPT":
             self.message(job_message)
             self.error(
                 "method only avaliable for optical instruments",
@@ -1114,7 +1113,7 @@ class Reduction(object):
                     # from multichip cameras: create fits preview
                     self.display_header("Creating fits preview" + ID + tagID)
                     code = Scripts.make_album(
-                        self.instrument, self.maindir, folder.path, tag,
+                        self.instrument.NAME, self.maindir, folder.path, tag,
                         env=self.theli_env, verb=self.verbosity)
                     self.check_return_code(code)
                 self.display_header(job_message + ID + tagID)
