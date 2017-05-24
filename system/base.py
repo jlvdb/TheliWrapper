@@ -42,7 +42,7 @@ except ImportError:
             DIRS[key] = os.path.join(DIRS[var], tail)  # path: 'variable/tail'
         DIRS[key] = os.path.normpath(DIRS[key])
     LOCKFILE = os.path.join(DIRS["PIPEHOME"], "theli.lock")
-    LOGFILE = os.path.join(DIRS["PIPEHOME"], "theli.log")
+    LOGFILE = os.path.join(DIRS["PIPEHOME"], "theli_last.log")
     # separate scripts and binaries from folders
     for key in tuple(DIRS.keys()):
         if key.startswith("P_"):
