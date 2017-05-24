@@ -187,7 +187,7 @@ def checked_call(script, arglist=None, parallel=False, **kwargs):
         with open(logfile, 'w') as log:
             # write header
             log.write("##" * 32 + "\n")
-            log.write("##" + "{:^6}".format(caller + ".sh") + "##\n")
+            log.write("##" + "{:^60}".format(caller + ".sh") + "##\n")
             log.write("##" * 32 + "\n\n")
             # write captured log
             for line in stdout:
