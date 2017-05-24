@@ -1,11 +1,15 @@
 """
-Base reduction system that manages the folders, parameters and script execution
+Defines the Reduction class that manages the data reduction process
 """
 
 import os
+import shutil
 from time import sleep
 
 from .base import *
+from .instruments import Instrument
+from .folder import Folder
+from .parameters import Parameters
 from .scripts import Scripts
 from .version import __version__
 
