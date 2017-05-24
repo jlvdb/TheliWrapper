@@ -17,7 +17,7 @@ from collections import namedtuple
 _theli_home = os.path.join(os.path.expanduser("~"), ".theli")
 try:
     sys.path.append(_theli_home)
-    from theli_paths import *
+    from theli_paths import DIRS, CMDTOOLS, CMDSCRIPTS, LOCKFILE, LOGFILE
 except ImportError as e:
     print("\nSetting up system for first usage...")
     # paths read from "progs.ini": folders, binaries, scripts and configuration

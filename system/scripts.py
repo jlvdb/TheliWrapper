@@ -11,22 +11,78 @@ from inspect import stack
 from .base import DIRS, LOCKFILE, LOGFILE, check_system_lock
 
 
-ERR_KEYS = ["*Error*"]  # error keywords
-ERR_EXCEPT = []  # keywords that are identified as error, but are not
-# get keywords for errors and exceptions in logfile from Theli GUI source file
-theliform_path = os.path.join(DIRS["PIPESOFT"], "gui", "theliform.ui.h")
-with open(theliform_path) as cc:
-    for line in cc.readlines():
-        line = line.strip()
-        # extract the strings from the c source file
-        if line.startswith("errorlist"):
-            statement = line.split('"', 1)[1].rsplit('"', 1)[0]
-            ERR_KEYS.append(statement.replace('\\"', '"'))
-        if line.startswith("falseerrorlist"):
-            statement = line.split('"', 1)[1].rsplit('"', 1)[0]
-            ERR_EXCEPT.append(statement.replace('\\"', '"'))
-if len(ERR_KEYS) == 1 or len(ERR_EXCEPT) == 0:
-    raise RuntimeError("could find error statements in %s" % theliform_path)
+# possible error keywords in log file
+ERR_KEYS = [
+    "*Error*",
+    "error",
+    "Illegal instruction",
+    "not found !",
+    ": not found",
+    "cholsolve()",
+    "inaccuracies likely to occur",
+    "WARNING: Not enough matched detections in ",
+    "too long to connect ",
+    "Segmentation fault",
+    "segmentation fault",
+    "Permission denied",
+    "command not found",
+    "Cannot map ",
+    " 0 astrometric references loaded from theli_mystd_scamp.cat",
+    "fatal: cannot open file",
+    "WARNING: Significant inaccuracy likely to occur in projection",
+    "WARNING: Null or negative global weighting factor",
+    "list has not enough members",
+    "Network is unreachable",
+    "fatal: division by zero attempted",
+    "head not present, Aborting",
+    "no match with reference catalog !",
+    "integer expression expected",
+    "keyword out of range",
+    "keyword unknown",
+    "too many arguments",
+    "cannot execute binary file",
+    "Cannot decode file",
+    "Not enough memory",
+    "Operation not supported",
+    "buffer overflow detected",
+    "Not enough memory",
+    "did not solve",
+    "(core dumped)",
+    "CCfits::FITS::CantOpen",
+    "has flux scale = 0: I will take 1 instead",
+    "unbound variable",
+    "Could not allocate memory",
+    ".maxlevel.dat: No such file or directory"
+]
+
+# keywords that are identified as error, but are not
+ERR_EXCEPT = [
+    "found no such key: e1",
+    "found no such key: ZPCHOICE",
+    "found no such key: SEEING",
+    "found no such key: ZP",
+    "found no such key: COEFF",
+    "error in filtering list catalog, exiting",
+    "not recreating links led to errors when",
+    "astr_interror2d",
+    "astr_interror1d",
+    "astr_referror2d",
+    "astr_referror1d",
+    "phot_error",
+    "ZP_ERROR",
+    "echo ERROR: ",
+    "Zeropoint error",
+    "seeing error",
+    "WARNING: FLAGS parameter not found in catalog theli_mystd_scamp.cat",
+    "will produce a mmep runtime error",
+    "echo \"/${MAIN}/${SCIENCE}/headers/${HEADBASE}.head not present; " +
+    "Aborting\"",
+    "theli_error",
+    "raises a KeyError just like a dict would. Please update your code so " +
+    "that KeyErrors",
+    "REF_PORT keyword unknown",
+    "CDSCLIENT_EXEC keyword unknown"
+]
 
 
 def checked_call(script, arglist=None, parallel=False, **kwargs):
