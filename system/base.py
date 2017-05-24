@@ -18,7 +18,8 @@ _theli_home = os.path.join(os.path.expanduser("~"), ".theli")
 try:
     sys.path.append(_theli_home)
     from theli_paths import DIRS, CMDTOOLS, CMDSCRIPTS, LOCKFILE, LOGFILE
-except ImportError as e:
+
+except ImportError:
     print("\nSetting up system for first usage...")
     # paths read from "progs.ini": folders, binaries, scripts and configuration
     CMDTOOLS = {}  # binaries
@@ -54,7 +55,8 @@ except ImportError as e:
             CMDTOOLS[key] = DIRS.pop(key)
         if key.startswith("S_"):
             CMDSCRIPTS[key] = DIRS.pop(key)
-    # create python source files containing DIRS, CMDTOOLS, CMDSCRIPTS
+
+    # create source files containing DIRS, CMDTOOLS, CMDSCRIPTS, ...
     try:
         with open(os.path.join(_theli_home, "theli_paths.py"), 'w') as f:
             f.write("\"\"\"\nThis file is generated automatically.\n")
@@ -77,7 +79,7 @@ except ImportError as e:
     except Exception:
         print("WARNING: database file could not be created: " + _paths_file)
         print("continuing...\n")
-    # no need to import source file, as DRIS, CMDTOOLS, CMDSCRIPTS are defined
+    # no need to import source file, as DRIS, CMDTOOLS, ... are defined
 
 
 # common fits file extensions and file names of calibration master frames
@@ -102,6 +104,21 @@ for n in range(6):
     tags = ["OFC" + "".join(tup) for tup in tags]
     # reverse the order for readability
     THELI_TAGS["OFC" + THELI_FLAGS[n]] = tuple(reversed(tags))
+
+
+INSTRUMENTS = []  # all instruments available in THELI
+# splitting script: "process_split_[instrument@telescope]"
+splitting_scripts = [
+    os.path.join(DIRS["SCRIPTS"], s)
+    for s in os.listdir(DIRS["SCRIPTS"])
+    if os.path.isfile(os.path.join(DIRS["SCRIPTS"], s)) and
+    s.startswith("process_split_") and
+    s != "process_split_tiff.sh"]
+# collect names of all available instruments
+for fpath in splitting_scripts:
+    # remove path, "process_split_" and extension -> instrument name
+    instrument = os.path.basename(fpath).split("_", 2)[-1]
+    INSTRUMENTS.append(os.path.splitext(instrument)[0])
 
 
 # find method to read fits file headers:
@@ -515,94 +532,89 @@ def retrieve_object():
     raise NotImplementedError
 
 
-class INSTRUMENT(object):
-    """
+class Instrument(object):
+    """Manages instruments in THELI by checking, if it is properly implemented
+    and loading instrument data.
+
+    Arguments:
+        instrument [string]:
+            valid THELI instrument string (e.g. ACAM@WHT)
     """
 
-    def __init__(self, path):
-        super(Folder, self).__init__()
+    def __init__(self, instrument):
+        super(Instrument, self).__init__()
+        # load instrument data
+        self.set(instrument)
 
-        # Relevant data to read from instrument .ini files:
+    def __str__(self):
+        string = "instrument: %s (type: %s)\n" % (self.NAME, self.TYPE)
+        string += "%d chip(s) of size" % self.NCHIPS
+        string += " size %d x %d" % (self.SIZEX, self.SIZEY)
+        string += " with pixel scale %.3f" % self.PIXSCALE
+        return string
+
+    def set(self, new_instrument):
+        """Changes instrument to 'new_instrument' and loads data file."""
+        # delete data from previous instrument
+        self.NAME = ""
+        self.SIZEX = 0
+        self.SIZEY = 0
+        self.NCHIPS = 0
+        self.TYPE = "NONE"
+        self.PIXSCALE = 0.0
+        # check if new instrument is implemented
+        if new_instrument not in INSTRUMENTS:
+            raise ValueError(
+                "Not in list of implemented instruments: " + new_instrument)
+        self.NAME = new_instrument
+        # figure out path to the shell style instrument .ini-file
+        if_prof = os.path.join(  # professional instruments
+            DIRS["SCRIPTS"], "instruments_professional", "%s.ini" % self.NAME)
+        if_comm = os.path.join(  # commercial instruments
+            DIRS["SCRIPTS"], "instruments_commercial", "%s.ini" % self.NAME)
+        if_user = os.path.join(  # user defined instruments
+            DIRS["PIPEHOME"], "instruments_user", "%s.ini" % self.NAME)
+        if os.path.exists(if_prof):
+            inifile = if_prof
+        elif os.path.exists(if_comm):
+            inifile = if_comm
+        elif os.path.exists(if_user):
+            inifile = if_user
+        else:  # data incomplete
+            raise ValueError(
+                "Instrument definition file not found: %s.ini" % self.NAME)
+        # Read the shell variables of interest from the instrument file:
         # number of chips, x- and y-dimension of first chip (assuming first one
         # is representative for mosaic), type (optical, NIR, MIR), pixel scale
-        INSTRUMENTS = {}
-        # splitting script: "process_split_[instrument@telescope]"
-        splitting_scripts = [
-            os.path.join(DIRS["SCRIPTS"], s) for s in os.listdir(DIRS["SCRIPTS"])
-            if os.path.isfile(os.path.join(DIRS["SCRIPTS"], s)) and
-            s.startswith("process_split_") and s != "process_split_tiff.sh"]
-        available_instruments = []
-        for fpath in splitting_scripts:
-            # remove path, "process_split_" and extension -> instrument name
-            instrument = os.path.basename(fpath).split("_", 2)[-1]
-            instrument = os.path.splitext(instrument)[0]
-            available_instruments.append(instrument)
-        # figure out the file path of the instrument .ini file
-        chipprops = namedtuple(
-            'chipprops', ['SIZEX', 'SIZEY', 'NCHIPS', 'TYPE', 'PIXSCALE'])
-        for instrument in available_instruments:
-            # test three possibilities: commercial, professional, user defined
-            if_prof = os.path.join(  # professional instruments
-                DIRS["SCRIPTS"], "instruments_professional",
-                "%s.ini" % instrument)
-            if_comm = os.path.join(  # commercial instruments
-                DIRS["SCRIPTS"], "instruments_commercial",
-                "%s.ini" % instrument)
-            if_user = os.path.join(  # user defined instruments
-                DIRS["PIPEHOME"], "instruments_user",
-                "%s.ini" % instrument)
-            if os.path.exists(if_prof):
-                inifile = if_prof
-            elif os.path.exists(if_comm):
-                inifile = if_comm
-            elif os.path.exists(if_user):
-                inifile = if_user
-            else:
-                # data incomplete -> instrument will not be in final list
-                continue
-            with open(inifile) as ini:
-                content = ini.readlines()
-            data = {}
-            # read the shell variables of interest from the instrument file
-            for line in content:
+        with open(inifile) as ini:
+            for line in ini.readlines():
                 # example format for single chip:
-                # SIZEX=([1]=2044)
+                # SIZEX/Y=([1]=2044)
                 # example format for mosaic:
-                # SIZEX=([1]=2038 [2]=2038 [3]=2038 [4]=2038 [5]=2038 ...)
+                # SIZEX/Y=([1]=2038 [2]=2038 [3]=2038 [4]=2038 [5]=2038 ...)
                 if "SIZEX=" in line:
                     n = line.strip().split("=")
                     if len(n) == 3:
-                        data["SIZEX"] = int(n[2].strip("()[]"))
+                        self.SIZEX = int(n[2].strip("()[]"))
                     else:
-                        data["SIZEX"] = int(n[2].split()[0])  # get first chip
+                        self.SIZEX = int(n[2].split()[0])  # get first chip
                 if "SIZEY=" in line:
                     n = line.strip().split("=")
                     if len(n) == 3:
-                        data["SIZEY"] = int(n[2].strip("()[]"))
+                        self.SIZEY = int(n[2].strip("()[]"))
                     else:
-                        data["SIZEY"] = int(n[2].split()[0])  # get first chip
+                        self.SIZEY = int(n[2].split()[0])  # get first chip
                 # format: NCHIPS/TYPE/PIXSCALE=X
                 if "NCHIPS=" in line:
                     n = line.strip().split("=")
-                    data["NCHIPS"] = int(n[1])
+                    self.NCHIPS = int(n[1])
                 if "TYPE=" in line:
-                    data["TYPE"] = line.strip().split("=")[1]
+                    self.TYPE = line.strip().split("=")[1]
                 if "PIXSCALE=" in line:
-                    data["PIXSCALE"] = float(line.strip().split("=")[1])
-            # type may not be defined: assume optical
-            if "TYPE" not in data:
-                data["TYPE"] = "OPT"
-            # if data is incomplete, we cannot use this instrument
-            if len(data) == len(chipprops._fields):
-                INSTRUMENTS[instrument] = chipprops(
-                    data["SIZEX"], data["SIZEY"], data["NCHIPS"], data["TYPE"],
-                    data["PIXSCALE"])
-            # raise error if data is incomplete for user defined instrument
-            else:
-                if inifile == if_user:
-                    raise ValueError(
-                        "configuration file for user defined instrument is "
-                        "incomplete or has improper format: " + if_user)
+                    self.PIXSCALE = float(line.strip().split("=")[1])
+        # type may not be defined: assume optical
+        if self.TYPE is None:
+            self.TYPE = "OPT"
 
 
 class Folder(object):

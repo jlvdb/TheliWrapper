@@ -52,8 +52,7 @@ ERR_KEYS = [
     "has flux scale = 0: I will take 1 instead",
     "unbound variable",
     "Could not allocate memory",
-    ".maxlevel.dat: No such file or directory"
-]
+    ".maxlevel.dat: No such file or directory"]
 
 # keywords that are identified as error, but are not
 ERR_EXCEPT = [
@@ -81,8 +80,7 @@ ERR_EXCEPT = [
     "raises a KeyError just like a dict would. Please update your code so " +
     "that KeyErrors",
     "REF_PORT keyword unknown",
-    "CDSCLIENT_EXEC keyword unknown"
-]
+    "CDSCLIENT_EXEC keyword unknown"]
 
 
 def checked_call(script, arglist=None, parallel=False, **kwargs):
