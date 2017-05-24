@@ -183,7 +183,7 @@ def checked_call(script, arglist=None, parallel=False, **kwargs):
         # write out log
         caller = stack()[1][3]
         logfile = os.path.join(
-            DIRS["PY2THELI"], "logs", "%s.log" % caller)
+            DIRS["LOGFOLDER"], "%s.log" % caller)
         with open(logfile, 'w') as log:
             # write header
             log.write("##" * 32 + "\n")

@@ -6,12 +6,16 @@ import os
 import sys
 import shutil
 import subprocess
+from copy import copy
 from re import split
 from fnmatch import fnmatch
 from inspect import stack
 from time import time
 from itertools import combinations
 from collections import namedtuple
+from platform import uname
+
+from .version import __version_gui__
 
 # import user specific paths
 _theli_home = os.path.join(os.path.expanduser("~"), ".theli")
@@ -27,7 +31,7 @@ except ImportError:
     DIRS = {}  # folders
     DIRS["HOME"] = os.path.expanduser("~")
     DIRS["PIPEHOME"] = os.path.join(DIRS["HOME"], ".theli")
-    DIRS["PY2THELI"] = os.path.join(DIRS["PIPEHOME"], "py2theli")
+    DIRS["LOGFOLDER"] = os.path.join(DIRS["PIPEHOME"], "script_logs")
     with open(os.path.join(DIRS["PIPEHOME"], "scripts", "progs.ini")) as ini:
         # progs.ini is a shell script with variables to replace
         for line in ini:
@@ -47,8 +51,8 @@ except ImportError:
             tail = tail.strip("/")
             DIRS[key] = os.path.join(DIRS[var], tail)  # path: 'variable/tail'
         DIRS[key] = os.path.normpath(DIRS[key])
-    LOCKFILE = os.path.join(DIRS["PY2THELI"], "theli.lock")
-    LOGFILE = os.path.join(DIRS["PY2THELI"], "theli.log")
+    LOCKFILE = os.path.join(DIRS["PIPEHOME"], "theli.lock")
+    LOGFILE = os.path.join(DIRS["PIPEHOME"], "theli.log")
     # separate scripts and binaries from folders
     for key in tuple(DIRS.keys()):
         if key.startswith("P_"):
@@ -1011,6 +1015,201 @@ class Parameters(object):
             configureation files.
     """
 
+    param_sets_default = {
+        "param_set1.ini": [
+            PROJECTNAME=
+            NPARA=
+            GUIVERSION=
+            KERNEL=
+            NFRAMES=
+            V_PRE_SPLITMIRCUBE=N
+            V_DO_BIAS=Y
+            V_DO_FLAT=Y
+            V_NONLINCORR=N
+            V_AP_SERVER=vizier.u-strasbg.fr
+            V_AP_MAGLIM=20
+            V_AP_RADIUS=
+            V_AP_REFRA=header
+            V_AP_REFDEC=header
+        ],
+        "param_set2.ini": [
+            V_PRE_RENAME_CHECKED=0
+            V_RENAME_FITSKEY=ARCFILE
+            V_SORT_FITSKEY=OBJECT
+            V_SORT_BIAS=
+            V_SORT_DARK=
+            V_SORT_DOMEFLAT=
+            V_SORT_SKYFLAT=
+            V_SORT_STD=
+            V_PRE_XTALK_NOR_CHECKED=0
+            V_PRE_XTALK_ROW_CHECKED=0
+            V_PRE_XTALK_MULTI_CHECKED=0
+            V_PRE_XTALK_NOR_AMPLITUDE=
+            V_PRE_XTALK_ROW_AMPLITUDE=
+            V_PRE_XTALK_NOR_BUTTONID=-1
+            V_PRE_XTALK_ROW_BUTTONID=-1
+            V_PRE_XTALK_MULTI_BUTTONID=-1
+            V_PRE_XTALK_MULTI_NSECTION=
+            V_CAL_OVSCANNLOW=0
+            V_CAL_OVSCANNHIGH=1
+            V_CAL_BIASNLOW=0
+            V_CAL_BIASNHIGH=1
+            V_CAL_DARKNLOW=0
+            V_CAL_DARKNHIGH=1
+            V_CAL_FLATNLOW=0
+            V_CAL_FLATNHIGH=1
+            V_BACK_NLOW1=0
+            V_BACK_NHIGH1=0
+            V_BACK_NLOW2=0
+            V_BACK_NHIGH2=1
+            V_BACK_MAGLIMIT=
+            V_BACK_DISTANCE=
+            V_BACK_SERVER=vizier.u-strasbg.fr
+            V_BACK_DETECTTHRESH=1.3
+            V_BACK_DETECTMINAREA=5
+            V_BACK_MASKEXPAND=
+            V_BACK_ILLUMSMOOTH=
+            V_BACK_FRINGESMOOTH=
+            V_BACK_WINDOWSIZE=0
+            V_BACK_GAPSIZE=
+            V_BACK_APPLYMODE=0
+            V_BACK_COMBINEMETHOD=Median
+            V_BACK_SEXFILTER=Y
+            V_BACK_ADJUSTGAINS=N
+            V_BACK_FRINGESCALE=Y
+            V_BACK_TWOPASS=Y
+            V_COLLDETECTTHRESH=
+            V_COLLDETECTMINAREA=
+            V_COLLMASKEXPAND=
+            V_COLLREJECTTHRESH=1.5
+            V_COLLXMIN=
+            V_COLLXMAX=
+            V_COLLYMIN=
+            V_COLLYMAX=
+            V_COLLDIRECTION=x
+            V_COLLMASKACTION=1
+            V_COLLAUTOTHRESHOLD=0
+            V_WEIGHTLOWTHRESHOLD=
+            V_WEIGHTHIGHTHRESHOLD=
+            V_WEIGHTBINMIN=-100
+            V_WEIGHTBINMAX=500
+            V_GLOBWFLATMIN=0.5
+            V_GLOBWFLATMAX=1.6
+            V_GLOBWDARKMIN=
+            V_GLOBWDARKMAX=
+            V_WEIGHTBINSIZE=4
+            V_DEFECT_KERNELSIZE=
+            V_DEFECT_ROWTOL=
+            V_DEFECT_COLTOL=
+            V_DEFECT_CLUSTOL=
+            V_DEFECT_KERNELSIZE_SF=
+            V_DEFECT_ROWTOL_SF=
+            V_DEFECT_COLTOL_SF=
+            V_DEFECT_CLUSTOL_SF=
+            V_COSMICSTHRESHOLD=0.1
+            V_COSMICDT=6
+            V_COSMICDMIN=1
+            V_BLOOMLOWLIMIT=20000
+            V_BLOOMMINAREA=100
+            V_BLOOMWIDTH=0
+            V_WEIGHT_BINOUTLIER=FALSE
+            V_MASKBLOOMSPIKE=0
+            V_GLOBW_UNIFORMWEIGHT=FALSE
+            V_AP_DETECTTHRESH=5.0
+            V_AP_DETECTMINAREA=5
+            V_DEBLENDMINCONT=0.0005
+            V_AP_LOWNUM=1
+            V_SEXCATMINFWHM=1.5
+            V_SEXCATFLAG=0
+            V_SEXBACKLEVEL=
+            V_AP_FILTER=N
+            V_SCAMP_MAXPOSANGLE=2.0
+            V_SCAMP_MAXOFFSET=2.0
+            V_SCAMP_MAXSCALE=1.05
+            V_SCAMP_SNLOW=5
+            V_SCAMP_SNHIGH=20
+            V_SCAMP_POLYORDER=3
+            V_SCAMP_POLYORDER2=
+            V_SCAMP_DISTORTGROUPS=
+            V_SCAMP_DISTORTKEYS=
+            V_SCAMP_FGROUPRADIUS=1.0
+            V_SCAMP_CROSSIDRADIUS=2.0
+            V_SCAMP_ASTREFWEIGHT=1.0
+            V_SCAMP_ASTRINSTRUKEY=FILTER
+            V_SCAMP_PHOTINSTRUKEY=FILTER
+            V_SCAMP_STABILITY=INSTRUMENT
+            V_SCAMP_MOSAICTYPE=UNCHANGED
+            V_SCAMP_FOCALPLANE=DEFAULT
+            V_SCAMP_MATCHFLIPPED=N
+            V_SCAMP_MATCHWCS=Y
+            V_ANET_MAXSCALE=1.05
+            V_ANET_POLYORDER=
+            V_ANET_SCAMPDISTORT=N
+            V_ABSPHOT_STDCAT_DIRECT=SDSS
+            V_ABSPHOT_STDCAT_INDIRECT=LANDOLT_UBVRI
+            V_ABSPHOT_APERTURE=10
+            V_ABSPHOT_FILTER=B
+            V_ABSPHOT_STDFILTER=U
+            V_ABSPHOT_STDCOLOR=UmB
+            V_ABSPHOT_COLORFIXED=0.0
+            V_ABSPHOT_EXTINCTION=-0.1
+            V_ABSPHOT_ZPMIN=(null)
+            V_ABSPHOT_ZPMAX=(null)
+            V_ABSPHOT_KAPPA=2.0
+            V_ABSPHOT_THRESHOLD=0.15
+            V_ABSPHOT_MAXITER=10
+            V_ABSPHOT_CONVERGENCE=0.01
+            V_ABSPHOT_STDMINMAG=0.0
+            V_ABSPHOT_MAXPHOTERR=0.05
+            V_ABSPHOT_STDFILTERM2=u
+            V_ABSPHOT_CALMODE=RUNCALIB
+            V_ABSPHOT_WCSERR=10
+            V_ABSPHOT_FITTINGMETHODM2=CHIP
+            V_ABSPHOT_WCSERRCHECKBOX=N
+            V_ABSPHOT_NIGHTSELECTION=
+            V_COADD_REFRA=
+            V_COADD_REFDEC=
+            V_COADD_IDENT=default
+            V_COADD_SEEING=
+            V_COADD_RZP=
+            V_COADD_PIXSCALE=
+            V_COADD_SIZEX=
+            V_COADD_SIZEY=
+            V_COADD_SKYPOSANGLE=
+            V_COADD_PROPMOTIONRA=
+            V_COADD_PROPMOTIONDEC=
+            V_COADD_CHIPS=""
+            V_COADD_FILTERTHRESHOLD=
+            V_COADD_FILTERCLUSTERSIZE=
+            V_COADD_FILTERBORDERWIDTH=
+            V_COADD_SMOOTHEDGE=
+            V_COADD_KERNEL=LANCZOS3
+            V_COADD_FILTER=
+            V_COADD_PROJECTION=TAN
+            V_COADD_CELESTIALTYPE=EQUATORIAL
+            V_COADD_COMBINETYPE=WEIGHTED
+            V_COADD_CLIPAMPFRAC=0.3
+            V_COADD_CLIPSIGMA=4
+            V_COADD_RESCALEWEIGHTS=N
+        ],
+        "param_set3.ini": [
+            V_SKYSUBDETECTTHRESH=1.5
+            V_SKYSUBDETECTMINAREA=5
+            V_SKYSUBBACKSIZE=256
+            V_SKYSUBMASKEXPAND=
+            V_SAVESKYMODEL=N
+            V_CSKY_RA1=
+            V_CSKY_RA2=
+            V_CSKY_DEC1=
+            V_CSKY_DEC2=
+            V_CSKY_XMIN=
+            V_CSKY_XMAX=
+            V_CSKY_YMIN=
+            V_CSKY_YMAX=
+            V_CSKYMANUAL=
+            V_CSKYMETHOD=0
+        ]
+    }
     # keep the three configuration files in memory as a list
     # each list element is a line of the files
     param_sets = {"param_set1.ini": [],
@@ -1059,26 +1258,10 @@ class Parameters(object):
     def reset(self):
         """Restore default THELI-parameter files from default version in HOME
         folder"""
-        # read backup of system specific values -> pack as dictionary
-        sysdefault = {}
-        with open(os.path.join(DIRS["PY2THELI"], "sys.default")) as d:
-            for line in d.readlines():
-                if "=" in line:
-                    key, val = line.split("=", 1)
-                    sysdefault[key] = val.strip()
-        # read defaults and write new parameter files
+        # copy back default configuration file and write it to disk
+        self.param_sets = copy(self.param_sets_default)
         for n in (1, 2, 3):
             fname = "param_set%d.ini" % n
-            with open(os.path.join(DIRS["PY2THELI"], fname + ".default")) as f:
-                # first file contains system dependent lines, treat separately
-                if n == 1:
-                    # default file 1 and insert system defaults
-                    self.param_sets[fname], remainder = \
-                        self._modify_parameter_file(f.readlines(), sysdefault)
-                # copy content of default file 2 and 3
-                else:
-                    self.param_sets[fname] = f.readlines()
-            # write new files to disk
             with open(os.path.join(DIRS["PIPEHOME"], fname), 'w') as f:
                 for line in self.param_sets[fname]:
                     f.write(line)
