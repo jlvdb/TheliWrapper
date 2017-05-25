@@ -100,8 +100,7 @@ image headers.
     catalogues. If you want to able to use the GUI as well,
     [download](https://www.astro.uni-bonn.de/theli/gui/download.html) it and
     install it with `./install.sh` and copy the *scamp* binary to the binary
-    folder of your *THELI* installation:
-    `[THELI]/bin/theli/bin/[your platform]/`
+    folder of your *THELI* installation: `[path to THELI]/bin/[your platform]/`
 
 
 Issues
