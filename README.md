@@ -83,7 +83,7 @@ image headers.
 2)  It is highly recommended to install *scamp* to compute precise astrometric
     solutions. Although used by *THELI*, it is not part of the package itself
     and requires *PLplot* with the *cairo* driver. On some linux distributions
-    (e.g. Ubunut, Linux Mint or Arch Linux) *scamp* can be found precompiled in
+    (e.g. Ubuntu, Linux Mint or Arch Linux) *scamp* can be found precompiled in
     the package repositories. Otherwise
     [download](https://www.astromatic.net/software/scamp) it and build it with
 
