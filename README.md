@@ -19,8 +19,28 @@ features
   [online help](https://www.astro.uni-bonn.de/theli/gui/index.html)
 
 
-Usage Example and Demo
-----------------------
+Usage
+-----
+The *TheliWrapper* provides three executables:
+
+1)  `theli.py JOBLIST INST ...`  
+    Main executable, does the job of data reduction. The usage is described
+    in detail on the [wiki page](https://github.com/jlvdb/TheliTools/wiki).  
+    *JOBLIST* specifies the reduction step(s) to apply, e.g. `CbCfCs` to
+    process the master bias frame (`Cb`), the flat field (`Cf`) and apply them
+    to the data (`Cs`). For more information, try `theli.py --help-jobs`.  
+    *INST* specifies the instrument used for the observations, e.g.
+    `ACAM@WHT`.  
+    For information on how to specify data folders, try `theli --help`. A list
+    of all parameters controlling the reduction, use `theli --help-parameters`.
+
+2)  `theli_copy_coadds SOURCE DESTINATION`  
+    Searches coadded images in the *SOURCE* folder and copies them to the
+    *DESTINATION* folder.
+
+3)  `theli_reset_folder FOLDERS`  
+    Restores the orignal input images in each of the *FOLDERS* and deletes all
+    other folder content.
 
 
 Requirements
@@ -34,8 +54,7 @@ Requirements
   (GUI)
 * *scamp* (optional but recommended), requires *PLplot* with *cairo* driver
 
-> **Note**: more C-libraries, that may not be preinstalled on your system, are
->           required to build the binaries 
+**Note:** More C-libraries then listed may be required to build the binaries.
 
 
 Installation
@@ -86,18 +105,23 @@ image headers.
 
 Issues
 ------
-Some main features of the original *THELI GUI* are not implemented yet:
-* Photometry (direct and indirect)
-* constant sky model subtraction
-* copying and restoring the astrometric solution to the image header manually
-
-The tasks in the *Miscellaneous* section are not implemented:
-* Combine folder of image
-* Imalyzer
-* Image statistics
-* Absolute photometric zeropoint
-* Animate
-* Prepare color picutre
+* Features to reduce infrared data are experimental yet:
+    * Cross talk correction
+    * Squence splitting
+    * Chop/nod sky subtraction
+    * Collapse correction
+* Some main features of the original *THELI GUI* are not implemented yet:
+    * Photometry (direct and indirect)
+    * Constant sky model subtraction
+    * Copying and restoring the astrometric solution to the image header
+      manually
+* The tasks in the *Miscellaneous* section are not implemented:
+    * Combine folder of image
+    * Imalyzer
+    * Image statistics
+    * Absolute photometric zeropoint
+    * Animate
+    * Prepare color picutre
 
 
 Maintainers
