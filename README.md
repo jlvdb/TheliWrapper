@@ -77,8 +77,8 @@ image headers.
 
        installation/gui-2.10.3-noGUI.tar.gz
 
-   which only contains the reduction scripts and parameter files. If you want
-   to able to use the GUI as well,
+   which only contains the reduction scripts, parameter files and reference
+   catalogues. If you want to able to use the GUI as well,
    [download it](https://www.astro.uni-bonn.de/theli/gui/download.html) and
    install it with
 
@@ -91,6 +91,6 @@ image headers.
    of your *THELI* installation.
 
 
-MAINTAINERS
+Maintainers
 -----------
 [Jan Luca van den Busch](https://github.com/jlvdb) (University of Bonn)
