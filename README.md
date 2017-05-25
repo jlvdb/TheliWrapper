@@ -18,12 +18,9 @@ features
 - Extensive documentation and [online help](https://www.astro.uni-bonn.de/theli/gui/index.html)
 
 
-INTRODUCTION
-------------
+Usage Example and Demo
+----------------------
 
-
-Installation
-============
 
 Requirements
 ------------
@@ -95,5 +92,5 @@ image headers.
 
 
 MAINTAINERS
-===========
+-----------
 [Jan Luca van den Busch](https://github.com/jlvdb) (University of Bonn)
