@@ -101,8 +101,7 @@ image headers.
     [download](https://www.astro.uni-bonn.de/theli/gui/download.html) it and
     install it with `./install.sh` and copy the *scamp* binary to the binary
     folder of your *THELI* installation:
-
-        [THELI]/bin/theli/bin/[your platform]/
+    `[THELI]/bin/theli/bin/[your platform]/`
 
 
 Issues
