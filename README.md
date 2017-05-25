@@ -4,18 +4,19 @@ TheliTools
 *THELI* is a tool for the automated reduction of astronomical images. It
 features
 
-- Automated reduction of optical, NIR and MIR data
-- 90 pre-configured instruments
-- Parallelisation
-- Flexible background correction
-- Automatic distortion correction and creation of large mosaics
-- Highly flexible coaddition: e.g. locking onto proper motion targets, various
+* Automated reduction of optical, NIR and MIR data
+* 90 pre-configured instruments
+* Parallelisation
+* Flexible background correction
+* Automatic distortion correction and creation of large mosaics
+* Highly flexible coaddition: e.g. locking onto proper motion targets, various
   projections, etc
-- Optimised weighting schemes and defect detection
-- Crosstalk and non-linearity correction
-- Atmospheric transparency correction
-- Absolute flux calibration
-- Extensive documentation and [online help](https://www.astro.uni-bonn.de/theli/gui/index.html)
+* Optimised weighting schemes and defect detection
+* Crosstalk and non-linearity correction
+* Atmospheric transparency correction
+* Absolute flux calibration
+* Extensive documentation and
+  [online help](https://www.astro.uni-bonn.de/theli/gui/index.html)
 
 
 Usage Example and Demo
@@ -33,8 +34,8 @@ Requirements
   (GUI)
 * *scamp* (optional but recommended), requires *PLplot* with *cairo* driver
 
-**Note**: some more C-libraries, that may not be preinstalled on your system, are
-required to build the binaries 
+> **Note**: more C-libraries, that may not be preinstalled on your system, are
+>           required to build the binaries 
 
 
 Installation
@@ -80,7 +81,23 @@ image headers.
     install it with `./install.sh` and copy the *scamp* binary to the binary
     folder of your *THELI* installation:
 
-        [THELI]/bin/theli/bin/[your platform]
+        [THELI]/bin/theli/bin/[your platform]/
+
+
+Issues
+------
+Some main features of the original *THELI GUI* are not implemented yet:
+* Photometry (direct and indirect)
+* constant sky model subtraction
+* copying and restoring the astrometric solution to the image header manually
+
+The tasks in the *Miscellaneous* section are not implemented:
+* Combine folder of image
+* Imalyzer
+* Image statistics
+* Absolute photometric zeropoint
+* Animate
+* Prepare color picutre
 
 
 Maintainers
