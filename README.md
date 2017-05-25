@@ -21,6 +21,7 @@ features
 
 Usage
 -----
+
 The *TheliWrapper* provides three executables:
 
 1)  `theli.py JOBLIST INST ...`  
@@ -45,11 +46,12 @@ The *TheliWrapper* provides three executables:
 
 Requirements
 ------------
-* Python including C-headers (python-dev)
+
+* Python, including C-headers (python-dev)
 * Python packages: numpy, scipy, matplotlib, pyfits
 * Python 3 (version >= 3.4)
 * Python 3 packages: astropy or pyfits (optional)
-* *THELI* package, requires (*CDS client*)
+* *THELI* package, requires *CDS client*
 * scripts and configuration files from the *THELI* graphical user interface
   (GUI)
 * *scamp* (optional but recommended), requires *PLplot* with *cairo* driver
@@ -59,6 +61,7 @@ Requirements
 
 Installation
 ------------
+
 The *TheliWrapper* is written in Python 3. All required packages are part of
 the Python standard library, but it is recommended to install
 [pyfits](https://pythonhosted.org/pyfits/) or
@@ -74,9 +77,8 @@ image headers.
 
         installation/theli-1.9.5.tgz
 
-    shipped with this package. Extract the archive and run the install scipt in
-    the *pipesetup* folder with `./install.sh -m "ALL"` to build the package
-    from source.
+    shipped with this package. Run the install scipt in the *pipesetup* folder
+    with `./install.sh -m "ALL"` to build the package from source.
 
 2)  It is highly recommended to install *scamp* to compute precise astrometric
     solutions. Although used by *THELI*, it is not part of the package itself
@@ -105,6 +107,7 @@ image headers.
 
 Issues
 ------
+
 * Features to reduce infrared data are experimental yet:
     * Cross talk correction
     * Squence splitting
@@ -126,4 +129,5 @@ Issues
 
 Maintainers
 -----------
+
 [Jan Luca van den Busch](https://github.com/jlvdb) (University of Bonn)
