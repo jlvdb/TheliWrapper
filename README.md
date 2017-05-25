@@ -1,4 +1,4 @@
-TheliTools
+TheliWrapper
 ============
 
 *THELI* is a tool for the automated reduction of astronomical images. It
