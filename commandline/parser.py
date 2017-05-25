@@ -36,7 +36,7 @@ class ActionParseFile(argparse.Action):
     """Read a parameter file with optinal arguments and parse it to the
     parameter name space. If the file (-path) does not exist, look into the
     ../preset folder
-    
+
     Arguments:
         arguments are parsed by argparse
     """
