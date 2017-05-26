@@ -57,7 +57,9 @@ C-libraries:
 * FFTW, GSL (GNU Scientific Library)
 * cfitsio, CCfits
 * LibTIFF, LibPNG
-* PLplot with cairo-driver
+
+**Note:** More C-libraries then listed may be required to build the binaries,
+depending on your system.
 
 Programs:
 * csh, wget
@@ -66,9 +68,6 @@ Programs:
 * scripts and configuration files from the *THELI* graphical user interface
   (GUI)
 * *scamp* (optional but recommended), requires *PLplot* with *cairo driver*
-
-**Note:** More C-libraries then listed may be required to build the binaries,
-depending on your system.
 
 
 Installation
