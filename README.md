@@ -47,16 +47,29 @@ The *TheliWrapper* provides three executables:
 Requirements
 ------------
 
-* Python, including C-headers (python-dev)
+Python:
+* Python (version >= 2.5), including C-headers (python-dev)
 * Python packages: numpy, scipy, matplotlib, pyfits
 * Python 3 (version >= 3.4)
 * Python 3 packages: astropy or pyfits (optional)
+
+C-libraries:
+* Python C-headers
+* FFTW, GSL (GNU Scientific Library)
+* cfitsio, CCfits
+* LibTIFF, LibPNG
+* PLplot with cairo-driver
+
+Programs:
+* csh, wget
+* ImageMagick
 * *THELI* package, requires *CDS client*
 * scripts and configuration files from the *THELI* graphical user interface
   (GUI)
 * *scamp* (optional but recommended), requires *PLplot* with *cairo driver*
 
-**Note:** More C-libraries then listed may be required to build the binaries.
+**Note:** More C-libraries then listed may be required to build the binaries,
+depending on your system.
 
 
 Installation
