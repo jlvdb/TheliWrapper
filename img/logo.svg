@@ -32,7 +32,7 @@
      id="namedview13"
      showgrid="false"
      inkscape:zoom="0.46964539"
-     inkscape:cx="446.54449"
+     inkscape:cx="123.96068"
      inkscape:cy="374.65561"
      inkscape:window-x="0"
      inkscape:window-y="0"
@@ -55,12 +55,13 @@
   <image
      sodipodi:absref="/home/janluca/bin/TheliWrapper/img/banner.jpeg"
      xlink:href="banner.jpeg"
-     y="-22.898726"
-     x="-93.100159"
-     id="image10"
-     preserveAspectRatio="none"
+     style="opacity:0.85"
+     width="2075"
      height="585"
-     width="2075" />
+     preserveAspectRatio="none"
+     id="image10"
+     x="-93.100159"
+     y="-22.898726" />
   <text
      transform="scale(1.0493827,0.9529412)"
      id="text4138"
