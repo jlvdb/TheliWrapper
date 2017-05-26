@@ -6,11 +6,38 @@
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    viewBox="0 0 1746.5175 496.82819"
    height="496.82819"
    width="1746.5175"
    version="1.1"
-   id="svg2">
+   id="svg2"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="logo.svg"
+   inkscape:export-filename="/home/janluca/bin/TheliWrapper/img/logo.png"
+   inkscape:export-xdpi="98"
+   inkscape:export-ydpi="98">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1366"
+     inkscape:window-height="715"
+     id="namedview13"
+     showgrid="false"
+     inkscape:zoom="0.46964539"
+     inkscape:cx="446.54449"
+     inkscape:cy="374.65561"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
   <metadata
      id="metadata8">
     <rdf:RDF>
@@ -19,58 +46,85 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <defs
      id="defs6" />
   <image
+     sodipodi:absref="/home/janluca/bin/TheliWrapper/img/banner.jpeg"
      xlink:href="banner.jpeg"
-     width="2075"
-     height="585"
-     preserveAspectRatio="none"
-     id="image10"
+     y="-22.898726"
      x="-93.100159"
-     y="-22.898726" />
+     id="image10"
+     preserveAspectRatio="none"
+     height="585"
+     width="2075" />
   <text
      transform="scale(1.0493827,0.9529412)"
      id="text4138"
-     y="266.64841"
+     y="268.74716"
      x="394.19553"
      style="font-style:normal;font-weight:normal;font-size:41.97530746px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     xml:space="preserve"><tspan
+     xml:space="preserve"
+     sodipodi:linespacing="125%"><tspan
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:131.1728363px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';fill:#000000"
-       y="266.64841"
+       y="268.74716"
        x="394.19553"
        id="tspan4140">TheliWrapper</tspan><tspan
        id="tspan4142"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:131.1728363px;font-family:sans-serif;-inkscape-font-specification:sans-serif;fill:#000000"
-       y="430.61444"
+       y="432.7132"
        x="394.19553" /></text>
   <text
      transform="scale(0.9650628,1.036202)"
      id="text4144"
-     y="323.67557"
+     y="325.60568"
      x="425.32153"
      style="font-style:normal;font-weight:normal;font-size:38.60251236px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     xml:space="preserve"><tspan
+     xml:space="preserve"
+     sodipodi:linespacing="125%"><tspan
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:48.2531395px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans'"
-       y="323.67557"
+       y="325.60568"
        x="425.32153"
        id="tspan4146">automated astronomical data reduction</tspan></text>
   <rect
      y="243.62225"
      x="0"
      height="13"
-     width="370"
+     width="350.83661"
      id="rect4152"
      style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
   <rect
      y="243.62219"
-     x="1376.5175"
+     x="1394.6162"
      height="13"
-     width="370"
+     width="351.90125"
      id="rect4152-8"
      style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:144.67782593px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     x="421.88083"
+     y="236.74084"
+     id="text4141"
+     sodipodi:linespacing="125%"
+     transform="scale(0.77336334,1.2930533)"><tspan
+       sodipodi:role="line"
+       id="tspan4143"
+       x="421.88083"
+       y="236.74084">{</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:144.67782593px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     x="-1838.4396"
+     y="236.73952"
+     id="text4141-7"
+     sodipodi:linespacing="125%"
+     transform="scale(-0.77335901,1.2930605)"><tspan
+       sodipodi:role="line"
+       id="tspan4143-5"
+       x="-1838.4396"
+       y="236.73952">{</tspan></text>
 </svg>
