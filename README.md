@@ -48,9 +48,8 @@ Requirements
 ------------
 
 Python:
-* Python (version >= 2.5), including C-headers (python-dev)
-* Python packages: numpy, scipy, matplotlib, pyfits
-* Python 3 (version >= 3.4)
+* Python 2 and 3 (version >= 2.5 and version >= 3.4)
+* Python 2 packages: numpy, scipy, matplotlib, pyfits
 * Python 3 packages: astropy or pyfits (optional)
 
 C-libraries:
@@ -142,4 +141,5 @@ Issues
 Maintainers
 -----------
 
-[Jan Luca van den Busch](https://github.com/jlvdb) (University of Bonn)
+[Jan Luca van den Busch](https://github.com/jlvdb)
+(Argelander Institute for Astronomy)
