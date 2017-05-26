@@ -31,9 +31,9 @@
      inkscape:window-height="715"
      id="namedview13"
      showgrid="false"
-     inkscape:zoom="0.16604472"
-     inkscape:cx="1501.8589"
-     inkscape:cy="-326.68917"
+     inkscape:zoom="0.46964539"
+     inkscape:cx="871.83756"
+     inkscape:cy="29.964908"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
@@ -46,7 +46,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -55,14 +55,14 @@
   <image
      sodipodi:absref="/home/janluca/bin/TheliWrapper/img/acam.jpeg"
      xlink:href="acam.jpeg"
-     transform="matrix(0.98438709,-0.17601718,0.17601718,0.98438709,0,0)"
-     style="opacity:0.85"
-     width="4533.4575"
-     height="4537.4502"
-     preserveAspectRatio="none"
+     y="-1546.8467"
+     x="-994.57312"
      id="image4394"
-     x="-1046.1913"
-     y="-1519.5063" />
+     preserveAspectRatio="none"
+     height="4537.4502"
+     width="4533.4575"
+     style="opacity:0.85"
+     transform="matrix(0.98438709,-0.17601718,0.17601718,0.98438709,0,0)" />
   <g
      id="g4146"
      transform="translate(0,-42.787144)">
