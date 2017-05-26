@@ -59,6 +59,9 @@ C-libraries:
 * LibTIFF, LibPNG
 * PLplot with cairo-driver
 
+**Note:** More C-libraries then listed may be required to build the binaries,
+depending on your system.
+
 Programs:
 * csh, wget
 * ImageMagick
@@ -66,9 +69,6 @@ Programs:
 * scripts and configuration files from the *THELI* graphical user interface
   (GUI)
 * *scamp* (optional but recommended), requires *PLplot* with *cairo driver*
-
-**Note:** More C-libraries then listed may be required to build the binaries,
-depending on your system.
 
 
 Installation
