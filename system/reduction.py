@@ -1243,10 +1243,6 @@ class Reduction(object):
     def get_reference_catalog(
             self, refcat="SDSS-DR9", server="vizier.u-strasbg.fr",
             imagepath=None, dt=-1, dmin=-1, redo=False, params={}):
-        """
-        implement SKY
-        - how to solve the problem in case of image reference (diff pointing)
-        """
         self.params.set(params)
         job_message = "Creating astrometric reference catalog"
         if self.sciencedir is None:
@@ -1350,16 +1346,21 @@ class Reduction(object):
                         print()
                     break
             self.check_return_code(code)
+        # error handling, if refcat does not exist
         refcatpath = os.path.join(
             self.sciencedir.abs, "cat", "ds9cat", "theli_mystd.reg")
-        with open(refcatpath) as cat:
-            for numstars, line in enumerate(cat, -1):
-                pass
-        if int(self.params.get("V_AP_LOWNUM")) >= numstars:
-            self.display_error("recieved insufficient number of sources")
+        try:
+            with open(refcatpath) as cat:
+                for numstars, line in enumerate(cat, -1):
+                    pass
+            if int(self.params.get("V_AP_LOWNUM")) >= numstars:
+                self.display_error("recieved insufficient number of sources")
+                sys.exit(1)
+            else:
+                self.display_message("%d reference sources retrieved" % numstars)
+        except Exception:
+            self.display_error("no reference catalogue was created")
             sys.exit(1)
-        else:
-            self.display_message("%d reference sources retrieved" % numstars)
         self.display_separator()
 
     def absolute_photometry_indirect(self, params={}):
