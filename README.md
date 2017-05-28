@@ -22,26 +22,7 @@ features
 Usage
 -----
 
-The *TheliWrapper* provides three executables:
-
-1)  `theli.py JOBLIST INST ...`  
-    Main executable, does the job of data reduction. The usage is described
-    in detail on the [wiki page](https://github.com/jlvdb/TheliTools/wiki).  
-    *JOBLIST* specifies the reduction step(s) to apply, e.g. `CbCfCs` to
-    process the master bias frame (`Cb`), the flat field (`Cf`) and apply them
-    to the data (`Cs`). For more information, try `theli.py --help-jobs`.  
-    *INST* specifies the instrument used for the observations, e.g.
-    `ACAM@WHT`.  
-    For information on how to specify data folders, try `theli --help`. A list
-    of all parameters controlling the reduction, use `theli --help-parameters`.
-
-2)  `theli_copy_coadds SOURCE DESTINATION`  
-    Searches coadded images in the *SOURCE* folder and copies them to the
-    *DESTINATION* folder.
-
-3)  `theli_reset_folder FOLDERS`  
-    Restores the orignal input images in each of the *FOLDERS* and deletes all
-    other folder content.
+For a comprehensive description and an usage demonstration, refere to the projects [Wiki-page](https://github.com/jlvdb/TheliWrapper/wiki/Getting-started).
 
 
 Requirements
