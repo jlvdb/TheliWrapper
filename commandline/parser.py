@@ -9,7 +9,9 @@ import argparse
 import shutil
 import textwrap
 from copy import copy
+from math import ceil
 
+from system.base import INSTRUMENTS
 from system.version import __version_theli__, __version_gui__, __version__
 from .commandlist import *  # command line parameter data base
 
@@ -24,7 +26,7 @@ try:
 
     def highlight_text(string):
         """Format the input 'string' using ANSI-escape sequences bold red"""
-        return "\033[1;31;0m" + string + "\033[0;0;0m"
+        return "\033[1;31m" + string + "\033[0;0m"
 
 except AssertionError:
     def highlight_text(string):
@@ -127,6 +129,43 @@ class ActionHelpJob(argparse.Action):
             # find all THELI parameters belonging to job
             thelihelp = ActionHelpTheli(option_string, "dummy_dest")
             thelihelp.print_help(jobabbr, match_jobs_only=True)
+        print(Parser.epilog)
+        sys.exit(0)
+
+
+class ActionHelpInst(argparse.Action):
+    """Print list of instruments on screen, if --help-instruments is used and
+    exit.
+
+    Arguments:
+        arguments are parsed by argparse
+    """
+
+    def __init__(self, option_strings, dest, nargs=0, **kwargs):
+        super(ActionHelpInst, self).__init__(
+            option_strings, dest, nargs, **kwargs)
+        # determine maximum possible text display width, limit it to 120
+        self.width = min(120, shutil.get_terminal_size((60, 24))[0])
+
+    def __call__(self, parser, namespace, value, option_string=None):
+        print(Parser.format_usage())
+        print("List of all available instruments:\n")
+        instruments = sorted(INSTRUMENTS)
+        colwidth = max(len(inst) for inst in instruments) + 2
+        # shape of listing: ncols x nrows
+        ncols = (self.width - 2) // (colwidth - 2)
+        nrows = ceil(len(instruments) / ncols)
+        for i in range(nrows):
+            row = "  "
+            try:
+                for offset in range(ncols):
+                    row += "{:{pad}}".format(
+                        instruments[i + offset * nrows], pad=colwidth)
+            except:
+                pass
+            finally:
+                print(row)
+        print()
         print(Parser.epilog)
         sys.exit(0)
 
@@ -257,8 +296,8 @@ class ActionHelpTheli(argparse.Action):
         # if the group name itself matches, keep the whole group
         # if match_jobs_only is True, filter on job abbreviations instead
         # perform case insensitive matching by converting to lower case
-        lpattern = pattern.lower()
         if pattern is not None:
+            lpattern = pattern.lower()
             for group in parse_parameters:
                 # keep whole group, if it machtes the pattern
                 if lpattern in group.lower() and not match_jobs_only:
@@ -528,9 +567,13 @@ helpgroup.add_argument(
     help="list of possible parameters for JOBLIST, "
          "list THELI parameters belonging to a job with [jobkey]")
 helpgroup.add_argument(
+    "--help-instruments", action=ActionHelpInst,
+    help="list of availble instruments")
+helpgroup.add_argument(
     "--help-parameters", metavar='pattern', action=ActionHelpTheli,
     help="list of THELI reduction parameters in groups, "
          "can be filtered with optional [pattern]")
+
 helpgroup.add_argument(
     '--version', action=ActionVersion,
     help="show program and software version numbers and exit")
