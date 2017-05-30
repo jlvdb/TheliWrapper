@@ -123,12 +123,18 @@ class ActionHelpJob(argparse.Action):
                     "  %s  " % arg, helpstr, pad=help_pad))
             print()
         else:  # display THELI parameters that act on the job 'jobabbr'
-            infostr = "THELI parameters that influence the " + \
-                "job %s:" % highlight_text(jobabbr)
-            print(textwrap.fill(infostr, width=self.width) + "\n")
-            # find all THELI parameters belonging to job
-            thelihelp = ActionHelpTheli(option_string, "dummy_dest")
-            thelihelp.print_help(jobabbr, match_jobs_only=True)
+            try:
+                infostr = "THELI parameters influencing the job %s (%s):" % (
+                    highlight_text(jobabbr), parse_actions[jobabbr]["name"])
+                print(textwrap.fill(infostr, width=self.width) + "\n")
+                # find all THELI parameters belonging to job
+                thelihelp = ActionHelpTheli(option_string, "dummy_dest")
+                thelihelp.print_help(jobabbr, match_jobs_only=True)
+            except KeyError:
+                infostr = "No job with abbreviation "
+                infostr += "'%s'. " % (highlight_text(jobabbr))
+                infostr += "For more information use '--help-jobs'"
+                print(textwrap.fill(infostr, width=self.width) + "\n")
         print(Parser.epilog)
         sys.exit(0)
 
@@ -325,16 +331,20 @@ class ActionHelpTheli(argparse.Action):
                 else:
                     helpdict[group] = filtered_args
         # print helpdict sorted alphabetically by group name
-        for group in sorted(helpdict.keys()):
-            print(self.highlight_pattern(group + ":", pattern, h_all=True))
-            # sort arguments by 'sort' keyword
-            sorting = [(val["sort"], arg)
-                       for arg, val in helpdict[group].items()]
-            for pos, arg in sorted(sorting, key=lambda x: x[0]):
-                helpstr = self.format_argument(arg, helpdict[group][arg])
-                helpstr = self.highlight_pattern(helpstr, pattern)
-                print(helpstr)
-            print()
+        if len(helpdict) == 0:
+            print("  no matching results\n")
+        else:
+            for group in sorted(helpdict.keys()):
+                print(self.highlight_pattern(group + ":", pattern, h_all=True))
+                # sort arguments by 'sort' keyword
+                sorting = [(val["sort"], arg)
+                           for arg, val in helpdict[group].items()]
+                for pos, arg in sorted(sorting, key=lambda x: x[0]):
+                    helpstr = self.format_argument(arg, helpdict[group][arg])
+                    if not match_jobs_only:
+                        helpstr = self.highlight_pattern(helpstr, pattern)
+                    print(helpstr)
+                print()
 
     def __call__(self, parser, namespace, pattern, option_string=None):
         """Print the THELI parameter help and exit.
