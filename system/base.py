@@ -133,7 +133,7 @@ except ImportError:
 # define function to read header values: if pyfits import failed, use custom
 # function based on command line tool 'defits' (from THELI package)
 if __pyfits_success__:
-    def get_FITS_header_values(file, keys, extension=-1):
+    def get_FITS_header_values(file, keys, extension=-1, exists=False):
         """Opens FITS image 'file' and checks, if a list of key words ('keys')
         is found in a specified 'extension' of the FITS image. By default all
         extensions are checked, if they contain the key words.
@@ -148,6 +148,8 @@ if __pyfits_success__:
             extension [int]:
                 FITS extension index (starting from 0) to check, by default -1
                 which checks all available extension
+            exists [bool]:
+                check key existence only
 
         Returns:
             values [list]:
@@ -161,15 +163,22 @@ if __pyfits_success__:
             for i in iter_ext:
                 # check if table contains any of the key words
                 for k, key in enumerate(keys):
-                    try:
-                        values[k] = (fits[i].header[key])
-                    except KeyError:
-                        continue
-        # if any key word did not appear in extension(s), its value is None
-        for i, val in enumerate(values):
-            if val is None:
-                raise KeyError("Keyword '%s' not found." % keys[i])
-        return values
+                    if exists:
+                        if key not in fits[i].header:
+                            raise KeyError()
+                    else:
+                        try:
+                            values[k] = (fits[i].header[key])
+                        except KeyError:
+                            continue
+        if exists:
+            return True
+        else:
+            # if any key word did not appear in extension(s), its value is None
+            for i, val in enumerate(values):
+                if val is None:
+                    raise KeyError("Keyword '%s' not found." % keys[i])
+            return values
 else:
     def get_FITS_header_values(file, keys, extension=-1):
         """Opens FITS image 'file' and checks, if a list of key words ('keys')
@@ -186,6 +195,9 @@ else:
             extension [int]:
                 FITS extension index (starting from 0) to check, by default -1
                 which checks all available extension
+            exists [bool]:
+                check key existence only
+
         Returns:
             values [list]:
                 value belonging to FITS key word in 'keys'
@@ -206,26 +218,29 @@ else:
             if subvals == []:
                 raise KeyError("Keyword '%s' not found." % key)
             values.append("\n".join(subvals))
-        # deduce the value type from the string pattern and convert it
-        for i in range(len(values)):
-            # special keywords like 'HISTORY' need no further processing
-            splited = values[i].split("=", 1)
-            if len(splited) == 1:
-                continue
-            # data keywords
-            else:
-                # some lines defining the image data type contain a comment
-                # which follows the value after a slash -> remove comment
-                splited = splited[1].split(" / ")[0].strip()
-                # strings are enclosed with with white spaces ('string     ')
-                if splited.startswith("'") and splited.endswith("'"):
-                    values[i] = splited.strip("'").strip()
-                # remaining types are either float or int -> convert type
-                elif "." in splited:
-                    values[i] = float(splited)
+        if exists:
+            return True
+        else:
+            # deduce the value type from the string pattern and convert it
+            for i in range(len(values)):
+                # special keywords like 'HISTORY' need no further processing
+                splited = values[i].split("=", 1)
+                if len(splited) == 1:
+                    continue
+                # data keywords
                 else:
-                    values[i] = int(splited)
-        return values
+                    # some lines defining the image data type contain a comment
+                    # which follows the value after a slash -> remove comment
+                    splited = splited[1].split(" / ")[0].strip()
+                    # strings are enclosed with with white spaces ('string   ')
+                    if splited.startswith("'") and splited.endswith("'"):
+                        values[i] = splited.strip("'").strip()
+                    # remaining types are either float or int -> convert type
+                    elif "." in splited:
+                        values[i] = float(splited)
+                    else:
+                        values[i] = int(splited)
+            return values
 
 
 # This is supposed to test if the terminal supports ANSI escape sequences.
@@ -254,6 +269,7 @@ try:
                     m magenta; c cyan; w white
                 background:
                     same as foreground
+
         Returns:
             string [string]:
                 input string decorated with ANSI-escape sequences
@@ -407,11 +423,22 @@ def extract_tag(filename):
         return 'none'  # raw image
     # images that contain underscore could be still raw image
     if all(char.isdigit() for char in tag):
+        # single chip cameras
+        print(tag)
         try:  # splitted images have an entry in the header key word 'HISTORY'
             if "mefsplit" in get_FITS_header_values(filename, ["HISTORY"])[0]:
+                print("splitted")
                 return ''  # splitted image
         except Exception:
-            return 'none'  # raw image
+            # for mosaics: files get splitted by chip
+            try:
+                get_FITS_header_values(filename, ["ORIGFILE"], exists=True)
+                print("splitted")
+                return ''  # splitted image
+            except Exception as e:
+                raise e
+                print("original")
+                return 'none'  # raw image
     # any other: have chip number + tag -> return tag only
     return ''.join([i for i in tag if not i.isdigit()])
 
