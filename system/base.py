@@ -424,20 +424,16 @@ def extract_tag(filename):
     # images that contain underscore could be still raw image
     if all(char.isdigit() for char in tag):
         # single chip cameras
-        print(tag)
         try:  # splitted images have an entry in the header key word 'HISTORY'
             if "mefsplit" in get_FITS_header_values(filename, ["HISTORY"])[0]:
-                print("splitted")
                 return ''  # splitted image
         except Exception:
             # for mosaics: files get splitted by chip
             try:
                 get_FITS_header_values(filename, ["ORIGFILE"], exists=True)
-                print("splitted")
                 return ''  # splitted image
             except Exception as e:
                 raise e
-                print("original")
                 return 'none'  # raw image
     # any other: have chip number + tag -> return tag only
     return ''.join([i for i in tag if not i.isdigit()])
