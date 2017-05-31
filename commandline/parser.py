@@ -398,7 +398,6 @@ def TypeNumberEmpty(type):
             an empty string or of type 'type'
     """
     def type_test(value):
-        print(value)
         if value == '':
             return value
         else:
