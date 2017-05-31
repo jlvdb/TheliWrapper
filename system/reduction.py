@@ -1246,6 +1246,7 @@ class Reduction(object):
     def get_reference_catalog(
             self, refcat="SDSS-DR9", server="vizier.u-strasbg.fr",
             imagepath=None, dt=-1, dmin=-1, redo=False, params={}):
+        # there is a BUG if catalogue does not cover pointing
         self.params.set(params)
         job_message = "Creating astrometric reference catalog"
         if self.sciencedir is None:
@@ -1360,7 +1361,8 @@ class Reduction(object):
                 self.display_error("recieved insufficient number of sources")
                 sys.exit(1)
             else:
-                self.display_message("%d reference sources retrieved" % numstars)
+                self.display_message(
+                    "%d reference sources retrieved" % numstars)
         except Exception:
             self.display_error("no reference catalogue was created")
             sys.exit(1)
