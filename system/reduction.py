@@ -29,7 +29,7 @@ class Reduction(object):
     def __init__(self, instrument, maindir, title="auto",
                  biasdir=None, darkdir=None, flatdir=None, flatoffdir=None,
                  sciencedir=None, skydir=None, stddir=None,
-                 reduce_skydir=False, ncpus="max", verbosity="normal",
+                 reduce_skydir=False, ncpus=None, verbosity="normal",
                  parseparams={}):
         super(Reduction, self).__init__()
         # set the main folder
@@ -208,7 +208,7 @@ class Reduction(object):
             self.theli_env[key] = kwargs[key]
 
     def set_cpus(self, cpus):
-        if cpus == "max":
+        if cpus is None:
             self.ncpus = os.cpu_count()
         elif type(cpus) is int:
             self.ncpus = max(1, min(os.cpu_count(), cpus))

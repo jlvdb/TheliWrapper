@@ -398,12 +398,13 @@ def TypeNumberEmpty(type):
             an empty string or of type 'type'
     """
     def type_test(value):
+        print(value)
         if value == '':
             return value
         else:
             strtype = "float" if type == float else "int"
             try:
-                value = type(value)
+                return type(value)
             except ValueError:
                 raise argparse.ArgumentTypeError(
                     "invalid %s value: '%s'" % (strtype, value))
@@ -537,7 +538,7 @@ optargs.add_argument(
     "--ignore-scamp-segfault", action="store_true",
     help="ignore segmentation faults of scamp")
 optargs.add_argument(
-    "--threads", metavar="N", type=int, default=9999,
+    "--threads", metavar="N", type=int,
     help="use at most N threads (default: all)")
 optargs.add_argument(
     "--verbosity", "-v", type=str, default="normal",
