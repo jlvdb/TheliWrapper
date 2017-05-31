@@ -1145,7 +1145,10 @@ class Reduction(object):
                 self.display_header(job_message)
                 self.display_error("master flat not found")
                 sys.exit(1)
-        found_output_files = self.sciencedir.check_global_weight()
+        # BUG: this is not intended: if many science folders have a shared
+        # WEIGHTS folder, the global weight will always be reused, if the
+        # reduction steps are not done all at once
+        found_output_files = False  # self.sciencedir.check_global_weight()
         # data verification
         if not redo and found_output_files:
             self.display_header(job_message)
