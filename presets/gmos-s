@@ -5,9 +5,3 @@ ref-cat                   USNO-B1
 sxt-detect-thresh         1.5
 sxt-detect-min-area       5
 sky-detect-mask-expand    3
-
-anet-distort-degrees      99
-ref-image-detect-tresh    99
-ref-image-detect-min-area 99
-sky-detect-mask-expand    99
-wt-defect-bg-clustertol   99

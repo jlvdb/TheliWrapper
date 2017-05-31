@@ -794,7 +794,7 @@ class Reduction(object):
                     self.display_header(job_message + ID)
                     self.display_error("no OFC images found")
                     sys.exit(1)
-                if input_count < 3:
+                if input_count < 3 and not apply_skydir:
                     self.display_header(job_message + ID)
                     self.display_error(
                         "need at least 3 exposures", critical=False)
