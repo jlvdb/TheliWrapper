@@ -1246,7 +1246,6 @@ class Reduction(object):
     def get_reference_catalog(
             self, refcat="SDSS-DR9", server="vizier.u-strasbg.fr",
             imagepath=None, dt=-1, dmin=-1, redo=False, params={}):
-        # there is a BUG if catalogue does not cover pointing
         self.params.set(params)
         job_message = "Creating astrometric reference catalog"
         if self.sciencedir is None:
@@ -1266,6 +1265,13 @@ class Reduction(object):
             self.display_separator()
             return
         tag = filetags.pop()
+        # create a reference time spam of if old version of catalogue exists
+        refcatpath = os.path.join(
+            self.sciencedir.abs, "cat", "ds9cat", "theli_mystd.reg")
+        try:
+            refcat_timestamp = os.path.getctime(refcatpath)
+        except Exception:
+            refcat_timestamp = None
         # image reference
         if refcat == "Image":
             job_message = job_message + " (image)"
@@ -1329,7 +1335,7 @@ class Reduction(object):
                     self.maindir, self.sciencedir.path, tag, refcat, server,
                     env=self.theli_env, verb=self.verbosity)
                 # handle connection error
-                if "Temporary failure in name resolution" in code[1]:
+                if "Temporary failure in name resolution" in code[0][1]:
                     if i == 0:
                         sys.stdout.write(ascii_styled("WARNING: ", "-y-"))
                         sys.stdout.write("retry connecting to server ")
@@ -1350,9 +1356,14 @@ class Reduction(object):
                         print()
                     break
             self.check_return_code(code)
-        # error handling, if refcat does not exist
-        refcatpath = os.path.join(
-            self.sciencedir.abs, "cat", "ds9cat", "theli_mystd.reg")
+        # if reference catalogue does not cover the imaging area, no file
+        # is created or the existing file does not change -> check time stemp
+        if refcat_timestamp is not None:
+            if refcat_timestamp == os.path.getctime(refcatpath):
+                self.display_error(
+                    "no sources returned, try a different catalogue")
+                sys.exit(1)
+        # exit if the returned source count is not sufficient
         try:
             with open(refcatpath) as cat:
                 for numstars, line in enumerate(cat, -1):
@@ -1364,7 +1375,8 @@ class Reduction(object):
                 self.display_message(
                     "%d reference sources retrieved" % numstars)
         except Exception:
-            self.display_error("no reference catalogue was created")
+            self.display_error(
+                    "no sources returned, try a different catalogue")
             sys.exit(1)
         self.display_separator()
 
