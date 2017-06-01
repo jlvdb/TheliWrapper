@@ -540,6 +540,10 @@ optargs.add_argument(
     "--threads", metavar="N", type=int,
     help="use at most N threads (default: all)")
 optargs.add_argument(
+    "--log-display", metavar="BIN", type=str, default="none",
+    choices=("none", "nano", "gedit", "kate", "emacs")
+    help="Optinal program to display the log file, if an error occured")
+optargs.add_argument(
     "--verbosity", "-v", type=str, default="normal",
     choices=("quiet", "normal", "full"))
 

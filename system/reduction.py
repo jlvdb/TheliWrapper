@@ -30,7 +30,7 @@ class Reduction(object):
                  biasdir=None, darkdir=None, flatdir=None, flatoffdir=None,
                  sciencedir=None, skydir=None, stddir=None,
                  reduce_skydir=False, ncpus=None, verbosity="normal",
-                 parseparams={}):
+                 logdisplay="none", parseparams={}):
         super(Reduction, self).__init__()
         # set the main folder
         self.maindir = os.path.abspath(maindir)
@@ -124,6 +124,13 @@ class Reduction(object):
         if reduce_skydir:
             self.display_warning(
                 "full sky folder processing not fully supported yet")
+        # how the log file should be displayed in case of an error
+        if logdisplay not in ("none", "nano", "gedit", "kate", "emacs"):
+            print(self)
+            self.display_error(
+                "unsupported text file display '%s'" % logdisplay)
+            sys.exit(1)
+        self.logdisplay = logdisplay
         # fix GUI issues
         #################
         # 'debloom' renamed to 'fitsdebloom' in THELI executable folders
@@ -274,20 +281,28 @@ class Reduction(object):
                 sleep(1)
             sys.stdout.write("\n")
             sys.stdout.flush()
-            # try different text editors to display log file
-            view_commands = []
-            if os.isatty(sys.stdout.fileno()):
-                view_commands.append(["nano", "+%d" % code[0], LOGFILE])
-            view_commands.extend([
-                ["gedit", "+%d" % code[0], LOGFILE, "/dev/null", "2>&1"],
-                ["kate", '-l', str(code[0]), LOGFILE, "/dev/null", "2>&1"],
-                ["emacs", "+%d" % code[0], LOGFILE, "/dev/null", "2>&1"]])
-            for command in view_commands:
+            # display log file
+            if self.logdisplay is not None:
+                if self.logdisplay == "nano":
+                    if os.isatty(sys.stdout.fileno()):
+                        command = ["nano", "+%d" % code[0], LOGFILE]
+                    else:
+                        self.display_error(
+                            "cannot use 'nano' in this terminal")
+                elif self.logdisplay == "gedit":
+                    command = ["gedit", "+%d" % code[0], LOGFILE,
+                               "/dev/null", "2>&1"]
+                elif self.logdisplay == "kate":
+                    command = ["kate", '-l', str(code[0]), LOGFILE,
+                               "/dev/null", "2>&1"]
+                elif self.logdisplay == "emacs":
+                    command = ["emacs", "+%d" % code[0], LOGFILE,
+                               "/dev/null", "2>&1"]
                 try:
                     subprocess.call(command)
-                    break
                 except FileNotFoundError:
-                    continue
+                    self.display_error(
+                        "cannot stat text display '%s'" % self.logdisplay)
             sys.exit(2)
 
     # ################## processing steps ##################

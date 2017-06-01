@@ -1,0 +1,11 @@
+bg-detect-thresh          1
+bg-detect-mask-expand     2
+ref-cat-maglim            23
+ref-cat                   USNO-B1
+ref-cat-query-radius      4.5
+scp-posangle-maxerr       0.1
+scp-match-tolerance       1
+scp-mosaic-type           SHARE_PROJAXIS
+sxt-detect-thresh         2.5
+sxt-detect-min-area       7
+sky-detect-mask-expand    3
