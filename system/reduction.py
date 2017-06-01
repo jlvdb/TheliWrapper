@@ -1499,6 +1499,31 @@ class Reduction(object):
                         self.maindir, self.sciencedir.path, tag,
                         env=self.theli_env, verb=self.verbosity)
                     self.check_return_code(code)
+            # count average detections per exposure / mosaic
+            catpath = os.path.join(folder.abs, "cat", "ds9cat")
+            exposures = {}  # make list of chip belongig to exposure
+            for file in os.listdir(catpath):
+                if "theli" in file:  # ingore downloaded reference catalogue
+                    continue
+                base, tag = file.rsplit("_", 1)
+                if base not in exposures:
+                    exposures[base] = []
+                exposures[base].append(tag)
+            # sum the detections in all chips and average them
+            chipcounts = []
+            for exposure, chips in exposures.items():
+                counts = 0  # objects per exposure / mosaic
+                for chip in chips:
+                    regfile = os.path.join(catpath, "%s_%s" % (exposure, chip))
+                    # count lines of files (minus header line)
+                    with open(regfile) as cat:
+                        for i, lines in enumerate(cat):
+                            pass
+                    counts += i
+                chipcounts.append(counts)
+            # compute average detections
+            detections = sum(chipcounts) // len(chipcounts)
+            self.display_message("%d sources detected (avg.)" % detections)
         self.display_separator()
 
     def astro_and_photometry(self, method="scamp", ignore_scamp_segfault=False,
