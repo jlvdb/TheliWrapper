@@ -1,11 +1,11 @@
 bg-detect-thresh          1
 bg-detect-mask-expand     2
-ref-cat-maglim            23
-ref-cat                   USNO-B1
-ref-cat-query-radius      4.5
+ref-cat                   Image
+ref-image-detect-thresh   10
+ref-image-detect-min-area 25
+sxt-detect-thresh         2.5
+sxt-detect-min-area       7
 scp-posangle-maxerr       0.1
 scp-match-tolerance       1
 scp-mosaic-type           UNCHANGED
-sxt-detect-thresh         2
-sxt-detect-min-area       14
 sky-detect-mask-expand    3

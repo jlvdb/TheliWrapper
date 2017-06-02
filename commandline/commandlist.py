@@ -109,7 +109,7 @@ parse_actions = {
         "name": "Get reference catalogue",
         "func": "get_reference_catalog",
         "para": ['ref_cat', 'ref_cat_server', 'ref_image',
-                 'ref_image_detect_tresh', 'ref_image_detect_min_area',
+                 'ref_image_detect_thresh', 'ref_image_detect_min_area',
                  'redo'],
         "help": "Downloads a reference catalogue from "
                 "web or creates it from an image"},
@@ -221,7 +221,7 @@ parse_parameters = {
             "sort": 200,
             "type": str,
             "choi": ("SDSS-DR9", "ISGL", "PPMXL", "USNO-B1", "2MASS",
-                     "URATI", "SPM4", "UCAC4", "GSC-2.3", "TYC"),
+                     "URATI", "SPM4", "UCAC4", "GSC-2.3", "TYC", "Image"),
             "defa": "SDSS-DR9",
             "help": "Reference catalogue to be used for astro- and "
                     "photometry"},
@@ -280,7 +280,7 @@ parse_parameters = {
             "type": str,
             "help": "Create reference catalogue from an image with known "
                     "astrometric solution"},
-        "--ref-image-detect-tresh": {
+        "--ref-image-detect-thresh": {
             "task": ["Ar"],
             "sort": 301,
             "type": float,
@@ -745,7 +745,7 @@ parse_parameters = {
             "sort": 304,
             "name": "V_CAL_BIASNHIGH",
             "type": int,
-            "defa": 3,
+            "defa": 1,
             "help": "Number of high pixels to be rejected from the stack"},
         "--use-dark": {
             "task": ["Cf", "Cs"],
@@ -1095,7 +1095,7 @@ parse_parameters = {
                     "SExtractor ellipse will be set to zero. In this way very "
                     "faint flux invisible in an individual image can be "
                     "caught as well. Good starting value: 3.0"},
-        "--coll-detect-tresh-auto": {
+        "--coll-detect-thresh-auto": {
             "task": ["Bc"],
             "sort": 103,
             "name": "V_COLLAUTOTHRESHOLD",

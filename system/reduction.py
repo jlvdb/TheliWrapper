@@ -272,17 +272,17 @@ class Reduction(object):
             self.display_error(
                 "found in line %d of log:\n         %s" %
                 (code[0], LOGFILE))
-            sys.stdout.write("displaying the log ")
-            sys.stdout.flush()
-            sleep(1)
-            for i in range(3):
-                sys.stdout.write(".")
+            # display log file
+            if self.logdisplay != "none":
+                sys.stdout.write("displaying the log ")
                 sys.stdout.flush()
                 sleep(1)
-            sys.stdout.write("\n")
-            sys.stdout.flush()
-            # display log file
-            if self.logdisplay is not None:
+                for i in range(3):
+                    sys.stdout.write(".")
+                    sys.stdout.flush()
+                    sleep(1)
+                sys.stdout.write("\n")
+                sys.stdout.flush()
                 if self.logdisplay == "nano":
                     if os.isatty(sys.stdout.fileno()):
                         command = ["nano", "+%d" % code[0], LOGFILE]
@@ -1294,11 +1294,13 @@ class Reduction(object):
             if imagepath is None:
                 self.display_header(job_message)
                 self.display_error("reference image path not specified")
-            imagepath = os.path.abspath(server)
+                sys.exit(1)
+            imagepath = os.path.abspath(imagepath)
             if not os.path.exists(imagepath):
                 self.display_header(job_message)
                 self.display_error(
                     "image for reference catalog creation does not exist")
+                sys.exit(1)
             # run jobs
             self.display_header(job_message)
             message = []
@@ -1311,7 +1313,7 @@ class Reduction(object):
                     "parameters " + ", ".join(message) +
                     " not set, use defaults")
             code = Scripts.create_astrorefcat_fromIMAGE(
-                imagepath, dt, dmin, self.sciencedir.path,
+                imagepath, dt, dmin, self.sciencedir.abs,
                 env=self.theli_env, verb=self.verbosity)
             self.check_return_code(code)
         # web reference
@@ -1387,8 +1389,9 @@ class Reduction(object):
                 self.display_error("recieved insufficient number of sources")
                 sys.exit(1)
             else:
+                ending = "detected" if refcat == "Image" else "retrieved"
                 self.display_message(
-                    "%d reference sources retrieved" % numstars)
+                    "%d reference sources %s" % (numstars, ending))
         except Exception:
             self.display_error(
                     "no sources returned, try a different catalogue")
