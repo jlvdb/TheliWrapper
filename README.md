@@ -1,5 +1,4 @@
-TheliWrapper
-============
+# TheliWrapper
 
 From the *THELI GUI* [webpage](https://www.astro.uni-bonn.de/theli/gui/index.html)
 > *THELI* is a powerful and easy-to-use package for astronomical image reduction, offering e.g.
@@ -16,15 +15,19 @@ From the *THELI GUI* [webpage](https://www.astro.uni-bonn.de/theli/gui/index.htm
 > * Absolute flux calibration
 > * Extensive documentation and online help
 
+--------------------------------------------------------------------------------
 
-Usage
------
+## Usage
 
-For a comprehensive description and an usage demonstration, refere to the projects [Wiki-page](https://github.com/jlvdb/TheliWrapper/wiki/Getting-started).
+For a detailed description and an usage demonstration, refere to the projects
+[Wiki-page](https://github.com/jlvdb/TheliWrapper/wiki).
 
 
-Requirements
-------------
+## Requirements
+
+The *TheliWrapper* is entirely written in Python 3, but it depends on external
+components which are written in Python2 and C/C++. Here is a (not neccessarily
+complete) list of components you will need to use the wrapper.
 
 Python:
 * Python 2 and 3 (version >= 2.5 and version >= 3.4)
@@ -49,8 +52,7 @@ Programs:
 * *scamp* (optional but recommended), requires *PLplot* with *cairo driver*
 
 
-Installation
-------------
+## Installation
 
 The *TheliWrapper* is written in Python 3. All required packages are part of
 the Python standard library, but it is recommended to install
@@ -94,8 +96,7 @@ image headers.
     folder of your *THELI* installation: `[path to THELI]/bin/[your platform]/`
 
 
-Issues
-------
+## Issues
 
 * Features to reduce infrared data are experimental yet:
     * Cross talk correction
@@ -116,8 +117,7 @@ Issues
     * Prepare color picutre
 
 
-Maintainers
------------
+## Maintainers
 
 [Jan Luca van den Busch](https://github.com/jlvdb)
 (Argelander Institute for Astronomy)
