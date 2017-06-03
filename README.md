@@ -1,5 +1,9 @@
 # TheliWrapper
 
+The *TheliWrapper* is a project to simplify the process of astronomical image
+reduction with the *THELI* software package significantly.  
+
+
 From the *THELI GUI* [webpage](https://www.astro.uni-bonn.de/theli/gui/index.html)
 > *THELI* is a powerful and easy-to-use package for astronomical image reduction, offering e.g.
 > * Automated reduction of optical, NIR and MIR data
@@ -25,7 +29,7 @@ For a detailed description and an usage demonstration, refere to the projects
 ## Requirements
 
 The *TheliWrapper* is entirely written in Python 3, but it depends on external
-components which are written in Python 2 and C/C++. Here is a (not neccessarily
+components which are written in Python 2 or C/C++. Here is a (not necessarily
 complete) list of components you will need to use the wrapper.
 
 Python:
@@ -104,6 +108,10 @@ These instructions should guide you through the steps of installing the
 
 ## Issues
 
+Not all components and features of the *THELI GUI* are implemented yet, as it
+is still under development. This sections gives you an overview over what you
+cannot do yet, or what may have unexpected behaviour.
+
 * Features to reduce infrared data are experimental yet:
     * Cross talk correction
     * Squence splitting
@@ -121,6 +129,10 @@ These instructions should guide you through the steps of installing the
     * Absolute photometric zeropoint
     * Animate
     * Prepare color picutre
+
+If you have any problems or notice any problems, please contact the maintainer(s)
+or post create a *new issue* on the
+[GitHub-page](https://github.com/jlvdb/TheliWrapper/issues).
 
 
 ## Maintainers
