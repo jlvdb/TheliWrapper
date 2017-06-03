@@ -15,7 +15,6 @@ From the *THELI GUI* [webpage](https://www.astro.uni-bonn.de/theli/gui/index.htm
 > * Absolute flux calibration
 > * Extensive documentation and online help
 
---------------------------------------------------------------------------------
 
 ## Usage
 
@@ -26,13 +25,13 @@ For a detailed description and an usage demonstration, refere to the projects
 ## Requirements
 
 The *TheliWrapper* is entirely written in Python 3, but it depends on external
-components which are written in Python2 and C/C++. Here is a (not neccessarily
+components which are written in Python 2 and C/C++. Here is a (not neccessarily
 complete) list of components you will need to use the wrapper.
 
 Python:
 * Python 2 and 3 (version >= 2.5 and version >= 3.4)
 * Python 2 packages: numpy, scipy, matplotlib, pyfits
-* Python 3 packages: astropy or pyfits (optional)
+* Python 3 packages: astropy or pyfits (optional, but recommended)
 
 C-libraries:
 * Python C-headers
@@ -54,23 +53,21 @@ Programs:
 
 ## Installation
 
-The *TheliWrapper* is written in Python 3. All required packages are part of
-the Python standard library, but it is recommended to install
-[pyfits](https://pythonhosted.org/pyfits/) or
-[astropy](http://docs.astropy.org/en/stable/) for more efficient access to FITS
-image headers.
+These instructions should guide you through the steps of installing the
+*TheliWrapper* together with its dependencies:
 
-1)  To use the software it is neccessary to install the
-    [*THELI*](https://www.astro.uni-bonn.de/theli/) astronomical data reduction
-    package. It requires to install the
-    [*CDS client*](http://cdsarc.u-strasbg.fr/doc/cdsclient.html) first.
+1)  Install the [*THELI*](https://www.astro.uni-bonn.de/theli/) astronomical
+    data reduction package. This requires to install the
+    [*CDS client*](http://cdsarc.u-strasbg.fr/doc/cdsclient.html) first:
+
+        ./configure
+        make
+        make install
+
     To install *THELI*,
-    [download](https://www.astro.uni-bonn.de/theli/gui/download.html) it or use
-
-        installation/theli-1.9.5.tgz
-
-    shipped with this package. Run the install scipt in the *pipesetup* folder
-    with `./install.sh -m "ALL"` to build the package from source.
+    [download](https://www.astro.uni-bonn.de/theli/gui/download.html) it and
+    run the install scipt with `pipesetup/install.sh -m "ALL"` to build the
+    package from source.
 
 2)  It is highly recommended to install *scamp* to compute precise astrometric
     solutions. Although used by *THELI*, it is not part of the package itself
@@ -83,7 +80,7 @@ image headers.
         make
         make install
 
-3)  Finally install the *THELI GUI*. It requires *Qt3* which has to be
+3)  Install the *THELI GUI*. It requires *Qt3* which has to be
     installed manualy on most systems. If you want to avoid this you can use
 
         installation/gui-2.10.3-noGUI.tar.gz
@@ -94,6 +91,13 @@ image headers.
     original version instead.  
     Install it with `./install.sh` and copy the *scamp* binary to the binary
     folder of your *THELI* installation: `[path to THELI]/bin/[your platform]/`
+
+4)  Download the [source files](https://github.com/jlvdb/TheliWrapper) and
+    extract to your preferred destination. When you run `theli.py` for the first
+    time it will locate the *THELI* configuration folder (`/home/user/.theli`)
+    and set up itself automatically.  
+    Whenever you change your *THELI* installation, it may be necessary to delete
+    `/home/janluca/.theli/theli_paths.py` such that it will be recreated.
 
 
 ## Issues
