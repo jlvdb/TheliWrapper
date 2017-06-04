@@ -147,30 +147,39 @@ class ActionHelpInst(argparse.Action):
         arguments are parsed by argparse
     """
 
-    def __init__(self, option_strings, dest, nargs=0, **kwargs):
+    def __init__(self, option_strings, dest, nargs='?', **kwargs):
         super(ActionHelpInst, self).__init__(
             option_strings, dest, nargs, **kwargs)
         # determine maximum possible text display width, limit it to 120
         self.width = min(120, shutil.get_terminal_size((60, 24))[0])
 
-    def __call__(self, parser, namespace, value, option_string=None):
+    def __call__(self, parser, namespace, inst, option_string=None):
         print(Parser.format_usage())
-        print("List of all available instruments:\n")
-        instruments = sorted(INSTRUMENTS)
-        colwidth = max(len(inst) for inst in instruments) + 2
-        # shape of listing: ncols x nrows
-        ncols = (self.width - 2) // (colwidth - 2)
-        nrows = ceil(len(instruments) / ncols)
-        for i in range(nrows):
-            row = "  "
-            try:
-                for offset in range(ncols):
-                    row += "{:{pad}}".format(
-                        instruments[i + offset * nrows], pad=colwidth)
-            except:
-                pass
-            finally:
-                print(row)
+        if inst is None:
+            print("List of all available instruments:\n")
+            instruments = sorted(INSTRUMENTS)
+            colwidth = max(len(inst) for inst in instruments) + 2
+            # shape of listing: ncols x nrows
+            ncols = (self.width - 2) // (colwidth - 2)
+            nrows = ceil(len(instruments) / ncols)
+            for i in range(nrows):
+                row = "  "
+                try:
+                    for offset in range(ncols):
+                        row += "{:{pad}}".format(
+                            instruments[i + offset * nrows], pad=colwidth)
+                except:
+                    pass
+                finally:
+                    print(row)
+        else:
+            if inst not in INSTRUMENTS:
+                print("No instrument named '%s'" % highlight_text(inst))
+                print("List all instruments with --help-instruments")
+            else:
+                print(
+                    "Properties of instrument '%s':\n" % highlight_text(inst))
+                print(Instrument(inst))
         print()
         print(Parser.epilog)
         sys.exit(0)
@@ -579,11 +588,11 @@ helpgroup.add_argument(
     help="show this help message and exit")
 helpgroup.add_argument(
     "--help-jobs", metavar='jobkey', action=ActionHelpJob,
-    help="list of possible parameters for JOBLIST, "
-         "list THELI parameters belonging to a job with [jobkey]")
+    help="list of job-keys for JOBLIST parameter or "
+         "list THELI parameters belonging to a job [jobkey]")
 helpgroup.add_argument(
-    "--help-instruments", action=ActionHelpInst,
-    help="list of availble instruments")
+    "--help-instruments", metavar="inst", action=ActionHelpInst,
+    help="list of availble instruments or properties of instrument [inst]")
 helpgroup.add_argument(
     "--help-parameters", metavar='pattern', action=ActionHelpTheli,
     help="list of THELI reduction parameters in groups, "

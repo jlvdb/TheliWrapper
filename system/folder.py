@@ -8,7 +8,8 @@ from time import time
 from fnmatch import fnmatch
 from inspect import stack
 
-from .base import FITS_EXTENSIONS, extract_tag, check_system_lock
+from .base import (FITS_EXTENSIONS,
+                   extract_tag, check_system_lock, get_FITS_header_values)
 
 
 MASTER_PATTERN = ("BIAS_", "FLAT_", "DARK_")
@@ -151,6 +152,18 @@ class Folder(object):
             if not (ignore_sub and tag.endswith("sub")):
                 tags.add(tag)
         return tags
+
+    def filters(self):
+        """List the filters of FITS images, if possible"""
+        filters = set()
+        for f in self._fits_index:
+            try:
+                # works for splitted images
+                filters.add(get_FITS_header_values(
+                    os.path.join(self.abs, f), ["FILTER"])[0])
+            except KeyError:
+                filters.add('(null)')  # fallback value
+        return filters
 
     def contains(self, entry):
         """Test if folder contains file oder folder 'entry'."""

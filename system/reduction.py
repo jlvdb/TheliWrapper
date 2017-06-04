@@ -826,7 +826,7 @@ class Reduction(object):
                 found_output_files = any(
                     seq.contains_tag(t + "B") for t in THELI_TAGS["OFCB"])
                 input_count = seq.fits_count()
-                self.check_filters(folder, check_flat=False)
+                self.check_filters(seq, check_flat=False)
                 # data verification
                 if len(filetags) > 1:
                     self.display_header(job_message + ID)
@@ -1200,7 +1200,7 @@ class Reduction(object):
                 self.display_header(job_message)
                 self.display_error("master flat not found")
                 sys.exit(1)
-            self.check_filters(folder, check_flat=True)
+            self.check_filters(self.sciencedir, check_flat=True)
         # BUG: this is not intended: if many science folders have a shared
         # WEIGHTS folder, the global weight will always be reused, if the
         # reduction steps are not done all at once

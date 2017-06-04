@@ -344,64 +344,6 @@ def get_crossid_radius(pixscale):
         return 10.0 * pixscale
 
 
-def list_filters(mainfolder, folder, instrument):
-    """Scans a folder for FITS images and tries to extract the filters used
-    during observation from the header. For detection in unsplitted (original)
-    files, the key words and string conversion have to be implemented manually.
-
-    Arguments:
-        mainfolder [string]:
-            path to folder containing 'folder'
-        folder [string]:
-            subfolder of mainfolder, containing FITS images
-        instrument [string]:
-            THELI identification string of the used instrument
-    Returns:
-        filters [list]:
-            unique list of filters found in the FITS headers
-
-    Note: The current implementation is not very flexible
-    """
-    if instrument not in INSTRUMENTS:
-        raise ValueError("instrument '%s' is not defined" % instrument)
-    folder = os.path.join(mainfolder, folder)
-    # read the files an collect all present filters
-    filters = set()
-    for file in os.listdir(folder):
-        path = os.path.join(folder, file)
-        if os.path.isfile(path) and path.endswith(FITS_EXTENSIONS):
-            try:  # splitted image image with standard THELI header
-                new_filter = get_FITS_header_values(path, ["FILTER"])[0]
-            except KeyError:  # original raw file -> manual implementation
-                # ACAM@WHT
-                if instrument == "ACAM@WHT":
-                    allfilters = get_FITS_header_values(path, ["ACAMFILT"])[0]
-                    filter1, filter2 = allfilters.split("+")
-                    if filter1 == "CLEAR":
-                        new_filter = "+" + filter2
-                    else:
-                        new_filter = "+" + filter1
-                # GMOS-S-HAM@GEMINI
-                elif instrument in ("GMOS-S-HAM@GEMINI",
-                                    "GMOS-S-HAM_1x1@GEMINI"):
-                    filter1, filter2 = get_FITS_header_values(
-                        path, ["FILTER1", "FILTER2"])
-                    if "open" in filter1:
-                        new_filter = filter2
-                    else:
-                        new_filter = filter1
-                # instrument not implemented
-                else:
-                    raise NotImplementedError(
-                        "instrument '%s' has no " % instrument +
-                        "implementation of filter keyword")
-            filters.add(new_filter)
-    # check result
-    if len(filters) == 0:
-        raise ValueError("Found no FITS-files with valid filter keywords")
-    return sorted(filters)
-
-
 def extract_tag(filename):
     """Extract the THELI progess tag from the filename of an image. Tag does
     not contain the chip number in case of a splitted image (example:
