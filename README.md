@@ -33,12 +33,12 @@ The *TheliWrapper* is entirely written in Python 3, but it depends on external
 components which are written in Python 2 or C/C++. Here is a (not necessarily
 complete) list of components you will need to use the wrapper.
 
-###### Python:
+#### Python:
 * Python 2 and 3 (version >= 2.5 and version >= 3.4)
 * Python 2 packages: numpy, scipy, matplotlib, pyfits
 * Python 3 packages: astropy or pyfits (optional, but recommended)
 
-###### C-libraries:
+#### C-libraries:
 * Python C-headers
 * FFTW, GSL (GNU Scientific Library)
 * cfitsio, CCfits
@@ -47,7 +47,7 @@ complete) list of components you will need to use the wrapper.
 **Note:** More C-libraries then listed may be required to build the binaries,
 depending on your system.
 
-###### Programs:
+#### Programs:
 * csh, wget
 * ImageMagick
 * *THELI* package, requires *CDS client*
@@ -113,17 +113,19 @@ Not all components and features of the *THELI GUI* are implemented yet, as it
 is still under development. This sections gives you an overview over what you
 cannot do yet, or what may have unexpected behaviour.
 
-###### Features to reduce infrared data are experimental yet:
+##### Features to reduce infrared data are experimental yet:
 * Cross talk correction
 * Squence splitting
 * Chop/nod sky subtraction
 * Collapse correction
-###### Some main features of the original *THELI GUI* are not implemented yet:
+
+##### Some main features of the original *THELI GUI* are not implemented yet:
 * Photometry (direct and indirect)
 * Constant sky model subtraction
 * Copying and restoring the astrometric solution to the image header
   manually
-###### The tasks in the *Miscellaneous* section are not implemented:
+
+##### The tasks in the *Miscellaneous* section are not implemented:
 * Combine folder of image
 * Imalyzer
 * Image statistics
