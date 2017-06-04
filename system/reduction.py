@@ -1821,8 +1821,16 @@ class Reduction(object):
                 self.exit(1)
             # run jobs
             tag = filetags.pop()
+            # read out current filter -> if not set manually
+            if self.params.get("V_COADD_IDENT") == '' or \
+                    self.params.get("V_COADD_FILTER") == '':
+                # if not unique, user must set the filter that is coadded
+                filterstr = folder.filters().pop()
+                self.params.set({'V_COADD_IDENT': filterstr,
+                                 'V_COADD_FILTER': filterstr})
+            else:
+                filterstr = self.params.get("V_COADD_FILTER")
             if redo:
-                filterstr = self.params.get("V_COADD_IDENT")
                 if filterstr == "(null)":
                     filterstr = "null"
                 folder.delete("coadd_" + filterstr)
