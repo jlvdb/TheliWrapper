@@ -12,6 +12,7 @@ from copy import copy
 from math import ceil
 
 from system.base import INSTRUMENTS
+from system.instruments import Instrument
 from system.version import __version_theli__, __version_gui__, __version__
 from .commandlist import *  # command line parameter data base
 

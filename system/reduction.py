@@ -96,19 +96,6 @@ class Reduction(object):
                        'NFRAMES': str(self.nframes),
                        'V_COADD_PIXSCALE': str(pixscale),
                        'V_SCAMP_CROSSIDRADIUS': str(crossid_rad)}
-        # get the filters of files present in the science folder
-        try:
-            self.filters = list_filters(
-                self.maindir, self.sciencedir.path, self.instrument.NAME)
-            self.active_filter = self.filters[0]
-            main_params['V_COADD_FILTER'] = self.active_filter
-            main_params['V_COADD_IDENT'] = self.active_filter
-        except ValueError:
-            print(self)
-            self.display_error("found no valid FITS files in science folder")
-            sys.exit(1)
-        except AttributeError:
-            pass
         self.params.set(main_params)
         # empty temp folder
         remove_temp_files()
@@ -191,9 +178,6 @@ class Reduction(object):
         if self.stddir is not None:
             string += "{:{pad}}{:}\n".format(
                 "Standard folder:", self.stddir.path, pad=PAD)
-        if hasattr(self, "filters"):
-            string += "{:{pad}}{:}\n".format(
-                "Filter(s):", " / ".join(self.filters), pad=PAD)
         return string
 
     def set_cpus(self, cpus):
@@ -212,20 +196,6 @@ class Reduction(object):
     def update_env(self, **kwargs):
         for key in kwargs:
             self.theli_env[key] = kwargs[key]
-
-    def change_filter(self, newfilter):
-        # given name
-        if type(newfilter) == str:
-            if newfilter not in self.filters:
-                self.error("'%s' not found in data" % newfilter)
-        # given index
-        else:
-            if newfilter >= len(self.filters):
-                self.error("index %d out range in filter list" % newfilter)
-            newfilter = self.filters[newfilter]
-        self.params.set({'V_COADD_IDENT': newfilter,
-                         'V_COADD_FILTER': newfilter})
-        self.active_filter = newfilter
 
     def check_filters(self, datafolder, check_flat=False):
         # check, if only one filter is used in data folder
@@ -259,6 +229,13 @@ class Reduction(object):
                     self.display_error(
                         "The filters of the off-flat fields do not match the "
                         "flat field filters.")
+
+    def set_coadd_filter(self, filterstring):
+        if filterstring not in self.sciencedir.filters():
+            self.display_error(
+                "Found no FITS image with filter string '%s'" % filterstring)
+        self.params.set({'V_COADD_IDENT': filterstring,
+                         'V_COADD_FILTER': filterstring})
 
     def display_header(self, message):
         if self.verbosity > 0:
