@@ -4,7 +4,8 @@ The *TheliWrapper* is a project to simplify the process of astronomical image
 reduction with the *THELI* software package significantly.  
 
 
-From the *THELI GUI* [webpage](https://www.astro.uni-bonn.de/theli/gui/index.html)
+##### From the *THELI GUI* [webpage](https://www.astro.uni-bonn.de/theli/gui/index.html)
+
 > *THELI* is a powerful and easy-to-use package for astronomical image reduction, offering e.g.
 > * Automated reduction of optical, NIR and MIR data
 > * 90 pre-configured instruments
