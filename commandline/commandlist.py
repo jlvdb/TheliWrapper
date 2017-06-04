@@ -1515,7 +1515,7 @@ parse_parameters = {
             "sort": 200,
             "name": "V_SKYSUBDETECTTHRESH",
             "type": float,
-            "defa": 1,
+            "defa": 1.5,
             "help": "Detection threshold per pixel for an object to be "
                     "masked."},
         "--sky-detect-min-area": {
