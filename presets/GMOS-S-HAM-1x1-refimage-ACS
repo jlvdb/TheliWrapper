@@ -4,7 +4,7 @@ ref-cat                   Image
 ref-image-detect-thresh   8
 ref-image-detect-min-area 15
 sxt-detect-thresh         1.5
-sxt-detect-min-area       7
+sxt-detect-min-area       14
 scp-posangle-maxerr       0.2
 scp-match-tolerance       1
 scp-mosaic-type           SAME_CRVAL
