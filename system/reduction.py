@@ -196,6 +196,23 @@ class Reduction(object):
                 "Filter(s):", " / ".join(self.filters), pad=PAD)
         return string
 
+    def set_cpus(self, cpus):
+        if cpus is None:
+            self.ncpus = os.cpu_count()
+        elif type(cpus) is int:
+            self.ncpus = max(1, min(os.cpu_count(), cpus))
+        else:
+            self.ncpus = 1
+
+    def get_npara_max(self):
+        imsize = self.instrument.SIZEX * self.instrument.SIZEY * 4
+        RAM = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
+        self.nframes = int(0.4 * RAM / imsize / self.ncpus)
+
+    def update_env(self, **kwargs):
+        for key in kwargs:
+            self.theli_env[key] = kwargs[key]
+
     def change_filter(self, newfilter):
         # given name
         if type(newfilter) == str:
@@ -210,22 +227,38 @@ class Reduction(object):
                          'V_COADD_FILTER': newfilter})
         self.active_filter = newfilter
 
-    def update_env(self, **kwargs):
-        for key in kwargs:
-            self.theli_env[key] = kwargs[key]
-
-    def set_cpus(self, cpus):
-        if cpus is None:
-            self.ncpus = os.cpu_count()
-        elif type(cpus) is int:
-            self.ncpus = max(1, min(os.cpu_count(), cpus))
-        else:
-            self.ncpus = 1
-
-    def get_npara_max(self):
-        imsize = self.instrument.SIZEX * self.instrument.SIZEY * 4
-        RAM = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
-        self.nframes = int(0.4 * RAM / imsize / self.ncpus)
+    def check_filters(self, datafolder, check_flat=False):
+        # check, if only one filter is used in data folder
+        if datafolder is not None:
+            data_filters = datafolder.filters()
+            if len(data_filters) > 1:
+                self.display_error(
+                    "Found observations with more than one filter in " +
+                    datafolder.abs)
+        # usefull for calibration
+        if check_flat:
+            flat_filters = self.flatdir.filters()
+            # check, if only one filter is used in data folder
+            if len(flat_filters) > 1:
+                self.display_error(
+                    "Found observations with more than one filter in flat "
+                    "folder")
+            # check if data folder filters match the flat fields
+            if flat_filters != data_filters:
+                self.display_error(
+                    "The filters of the flat fields do not match the filters "
+                    "in " + datafolder.abs)
+            # do the same checks for the flat-off data if given
+            if self.flatoffdir is not None:
+                flatoff_filters = self.flatoffdir.filters()
+                if len(flatoff_filters) > 1:
+                    self.display_error(
+                        "Found observations with more than one filter in flat-"
+                        "off folder")
+                if flatoff_filters != flat_filters:
+                    self.display_error(
+                        "The filters of the off-flat fields do not match the "
+                        "flat field filters.")
 
     def display_header(self, message):
         if self.verbosity > 0:
@@ -1299,7 +1332,8 @@ class Reduction(object):
             if not os.path.exists(imagepath):
                 self.display_header(job_message)
                 self.display_error(
-                    "image for reference catalog creation does not exist")
+                    "image for reference catalog creation does not exist: " +
+                    imagepath)
                 sys.exit(1)
             # run jobs
             self.display_header(job_message)
