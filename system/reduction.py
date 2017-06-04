@@ -575,6 +575,7 @@ class Reduction(object):
             filetags = folder.tags(ignore_sub=True)
             found_split_files = folder.contains_tag('')
             found_masterflat = folder.contains_master()
+            self.check_filters(folder, check_flat=True)
             # check flat norm explicitly
             if ID == "":
                 found_normflat = folder.search_flatnorm()
@@ -690,6 +691,7 @@ class Reduction(object):
             found_split_files = folder.contains_tag('')
             found_OFC_folder = folder.contains("OFC_IMAGES")
             found_OFC_files = folder.contains_tag('OFC')
+            self.check_filters(folder, check_flat=True)
             # data verification
             if len(filetags) > 1:
                 self.display_header(job_message + ID)
@@ -824,6 +826,7 @@ class Reduction(object):
                 found_output_files = any(
                     seq.contains_tag(t + "B") for t in THELI_TAGS["OFCB"])
                 input_count = seq.fits_count()
+                self.check_filters(folder, check_flat=False)
                 # data verification
                 if len(filetags) > 1:
                     self.display_header(job_message + ID)
@@ -956,6 +959,7 @@ class Reduction(object):
                 folder.contains(t + "H_IMAGES") for t in THELI_TAGS["OFCH"])
             found_output_files = any(
                 folder.contains_tag(t + "H") for t in THELI_TAGS["OFCH"])
+            self.check_filters(folder, check_flat=False)
             # data verification
             if len(filetags) > 1:
                 self.display_header(job_message + ID)
@@ -1021,6 +1025,7 @@ class Reduction(object):
                 folder.contains(t + "C_IMAGES") for t in THELI_TAGS["OFCC"])
             found_output_files = any(
                 folder.contains_tag(t + "C") for t in THELI_TAGS["OFCC"])
+            self.check_filters(folder, check_flat=False)
             # data verification
             if len(filetags) > 1:
                 self.display_header(job_message + ID)
@@ -1090,6 +1095,7 @@ class Reduction(object):
                 folder.contains(t + "D_IMAGES") for t in THELI_TAGS["OFCD"])
             found_output_files = any(
                 folder.contains_tag(t + "D") for t in THELI_TAGS["OFCD"])
+            self.check_filters(folder, check_flat=False)
             # data verification
             if len(filetags) > 1:
                 self.display_header(job_message + ID)
@@ -1146,6 +1152,7 @@ class Reduction(object):
         for folder, ID in zip(folders, IDs):
             filetags = folder.tags(ignore_sub=True)
             found_output_files = folder.contains_preview()
+            self.check_filters(folder, check_flat=False)
             # data verification
             if len(filetags) < 1:
                 self.display_header(job_message + ID)
@@ -1193,6 +1200,7 @@ class Reduction(object):
                 self.display_header(job_message)
                 self.display_error("master flat not found")
                 sys.exit(1)
+            self.check_filters(folder, check_flat=True)
         # BUG: this is not intended: if many science folders have a shared
         # WEIGHTS folder, the global weight will always be reused, if the
         # reduction steps are not done all at once
@@ -1233,6 +1241,7 @@ class Reduction(object):
         for folder, ID in zip(folders, IDs):
             filetags = folder.tags(ignore_sub=True)
             found_output_files = folder.check_weight()
+            self.check_filters(folder, check_flat=False)
             # data verification
             if not redo and found_output_files:
                 self.display_header(job_message)
