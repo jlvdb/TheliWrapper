@@ -61,50 +61,55 @@ depending on your system.
 These instructions should guide you through the steps of installing the
 *TheliWrapper* together with its dependencies:
 
-1)  *THELI* depends on the *CDS client*.
-    [Download](http://cdsarc.u-strasbg.fr/doc/cdsclient.html) the most recent
-    version, extract it and install it with
+##### CDS client
+*THELI* depends on the *CDS client*.
+[Download](http://cdsarc.u-strasbg.fr/doc/cdsclient.html) the most recent
+version, extract it and install it with
 
-        ./configure
-        make
-        make install
+    ./configure
+    make
+    make install
 
-2)  To install *THELI*,
-    [download](https://www.astro.uni-bonn.de/theli/gui/download.html) and
-    extract it and run the install scipt with `pipesetup/install.sh -m "ALL"`
-    to build the package from source.
+##### THELI
+To install *THELI*,
+[download](https://www.astro.uni-bonn.de/theli/gui/download.html) and
+extract it and run the install scipt with `pipesetup/install.sh -m "ALL"`
+to build the package from source.
 
-3)  It is highly recommended to install *scamp* to compute precise astrometric
-    solutions. Although used by *THELI*, it is not part of the package itself
-    and requires *PLplot* with the *cairo* driver. On some linux distributions
-    (e.g. Ubuntu, Linux Mint or Arch Linux) *scamp* can be found precompiled in
-    the package repositories. Otherwise
-    [download](https://www.astromatic.net/software/scamp) it and try to build
-    it from source with
+##### Scamp
+It is highly recommended to install *scamp* to compute precise astrometric
+solutions. Although used by *THELI*, it is not part of the package itself
+and requires *PLplot* with the *cairo* driver. On some linux distributions
+(e.g. Ubuntu, Linux Mint or Arch Linux) *scamp* can be found precompiled in
+the package repositories. Otherwise
+[download](https://www.astromatic.net/software/scamp) it and try to build
+it from source with
 
-        ./configure
-        make
-        make install
+    ./configure
+    make
+    make install
 
-4)  Install the *THELI GUI*. It requires *Qt3* which has to be installed manualy
-    on most systems. If you want to avoid this you can use
+##### THELI GUI
+Install the *THELI GUI*. It requires *Qt3* which has to be installed manualy
+on most systems. If you want to avoid this you can use
 
-        **missing link** -> gui-2.10.3-noGUI.tar.gz
+    **missing link** -> gui-2.10.3-noGUI.tar.gz
 
-    which only contains the reduction scripts, parameter files and reference
-    catalogues. If you want to be able to use the GUI as well,
-    [download](https://www.astro.uni-bonn.de/theli/gui/download.html) the
-    original version instead.  
-    Install it with `./install.sh` and copy the *scamp* binary to the binary
-    folder of your *THELI* installation: `[path to THELI]/bin/[your platform]/`
+which only contains the reduction scripts, parameter files and reference
+catalogues. If you want to be able to use the GUI as well,
+[download](https://www.astro.uni-bonn.de/theli/gui/download.html) the
+original version instead.  
+Install it with `./install.sh` and copy the *scamp* binary to the binary
+folder of your *THELI* installation: `[path to THELI]/bin/[your platform]/`
 
-5)  To install the *TheliWrapper*, just download the
-    [source files](https://github.com/jlvdb/TheliWrapper) and copy them to your
-    preferred destination. When you run `theli.py` for the first time it will
-    locate the *THELI* configuration folder (`/home/user/.theli`) and will set
-    up itself automatically.  
-    Whenever you change your *THELI* installation, it may be necessary to delete
-    `/home/janluca/.theli/theli_paths.py` such that it will be recreated.
+##### TheliWrapper
+To install the *TheliWrapper*, just download the
+[source files](https://github.com/jlvdb/TheliWrapper) and copy them to your
+preferred destination. When you run `theli.py` for the first time it will
+locate the *THELI* configuration folder (`/home/user/.theli`) and will set
+up itself automatically.  
+Whenever you change your *THELI* installation, it may be necessary to delete
+`/home/janluca/.theli/theli_paths.py` such that it will be recreated.
 
 
 ## Issues
