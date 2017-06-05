@@ -93,7 +93,7 @@ class Reduction(object):
         self.params = Parameters(parseparams)  # parse any default parameters
         pixscale = self.instrument.PIXSCALE
         crossid_rad = get_crossid_radius(pixscale)
-        main_params = {'PROJECTNAME': title,
+        main_params = {'PROJECTNAME': self.title,
                        'NPARA': str(self.ncpus),
                        'NFRAMES': str(self.nframes),
                        'V_COADD_PIXSCALE': str(pixscale),
