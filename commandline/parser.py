@@ -552,7 +552,8 @@ optargs.add_argument(
 optargs.add_argument(
     "--log-display", metavar="BIN", type=str, default="nano",
     choices=("none", "nano", "gedit", "kate", "emacs"),
-    help="Optinal program to display the log file, if an error occured")
+    help="Optional program to display the log file, if an error occured "
+         "(default: nano)")
 optargs.add_argument(
     "--disable-filter-check", action="store_false",
     help="Disable the instrument filter check and comparison")

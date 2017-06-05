@@ -3,7 +3,7 @@ bg-detect-mask-expand     2
 ref-cat                   Image
 ref-image-detect-thresh   9
 ref-image-detect-min-area 15
-sxt-detect-thresh         1.5
+sxt-detect-thresh         1.3
 sxt-detect-min-area       10
 scp-posangle-maxerr       0.2
 scp-match-tolerance       1
