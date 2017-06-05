@@ -61,7 +61,7 @@ depending on your system.
 These instructions should guide you through the steps of installing the
 *TheliWrapper* together with its dependencies:
 
-##### CDS client
+#### CDS client
 *THELI* depends on the *CDS client*.
 [Download](http://cdsarc.u-strasbg.fr/doc/cdsclient.html) the most recent
 version, extract it and install it with
@@ -70,13 +70,13 @@ version, extract it and install it with
     make
     make install
 
-##### THELI
+#### THELI
 To install *THELI*,
 [download](https://www.astro.uni-bonn.de/theli/gui/download.html) and
 extract it and run the install scipt with `pipesetup/install.sh -m "ALL"`
 to build the package from source.
 
-##### Scamp
+#### Scamp
 It is highly recommended to install *scamp* to compute precise astrometric
 solutions. Although used by *THELI*, it is not part of the package itself
 and requires *PLplot* with the *cairo* driver. On some linux distributions
@@ -89,7 +89,7 @@ it from source with
     make
     make install
 
-##### THELI GUI
+#### THELI GUI
 Install the *THELI GUI*. It requires *Qt3* which has to be installed manualy
 on most systems. If you want to avoid this you can use
 
@@ -102,7 +102,7 @@ original version instead.
 Install it with `./install.sh` and copy the *scamp* binary to the binary
 folder of your *THELI* installation: `[path to THELI]/bin/[your platform]/`
 
-##### TheliWrapper
+#### TheliWrapper
 To install the *TheliWrapper*, just download the
 [source files](https://github.com/jlvdb/TheliWrapper) and copy them to your
 preferred destination. When you run `theli.py` for the first time it will
