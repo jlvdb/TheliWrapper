@@ -11,7 +11,7 @@ project = Reduction(
     flatoffdir=args.flatoff, sciencedir=args.science, skydir=args.sky,
     stddir=args.standard, reduce_skydir=args.reduce_sky,
     ncpus=args.threads, verbosity=args.verbosity, parseparams=theli_args,
-    logdisplay=args.log_display)
+    logdisplay=args.log_display, check_filters=args.disable_filter_check)
 
 for job in joblist:
     # read parameters for Reduction - classmethods

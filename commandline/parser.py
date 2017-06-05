@@ -554,6 +554,9 @@ optargs.add_argument(
     choices=("none", "nano", "gedit", "kate", "emacs"),
     help="Optinal program to display the log file, if an error occured")
 optargs.add_argument(
+    "--disable-filter-check", action="store_false",
+    help="Disable the instrument filter check and comparison")
+optargs.add_argument(
     "--verbosity", "-v", type=str, default="normal",
     choices=("quiet", "normal", "full"))
 

@@ -18,19 +18,21 @@ class Reduction(object):
 
     title = "unnamed"
     maindir = None
-    sciencedir = None
     biasdir = None
     darkdir = None
     flatdir = None
     flatoffdir = None
+    sciencedir = None
     skydir = None
     stddir = None
+
+    obsfilter = '(null)'
 
     def __init__(self, instrument, maindir, title="auto",
                  biasdir=None, darkdir=None, flatdir=None, flatoffdir=None,
                  sciencedir=None, skydir=None, stddir=None,
                  reduce_skydir=False, ncpus=None, verbosity="normal",
-                 logdisplay="none", parseparams={}):
+                 logdisplay="none", check_filters=True, parseparams={}):
         super(Reduction, self).__init__()
         # set the main folder
         self.maindir = os.path.abspath(maindir)
@@ -111,6 +113,9 @@ class Reduction(object):
         if reduce_skydir:
             self.display_warning(
                 "full sky folder processing not fully supported yet")
+        # determine weather the folders should be checked to contain one type
+        # of filters only
+        self.do_filter_check = check_filters
         # how the log file should be displayed in case of an error
         if logdisplay not in ("none", "nano", "gedit", "kate", "emacs"):
             print(self)
@@ -197,38 +202,24 @@ class Reduction(object):
         for key in kwargs:
             self.theli_env[key] = kwargs[key]
 
-    def check_filters(self, datafolder, check_flat=False):
-        # check, if only one filter is used in data folder
-        if datafolder is not None:
-            data_filters = datafolder.filters()
-            if len(data_filters) > 1:
-                self.display_error(
-                    "Found observations with more than one filter in " +
-                    datafolder.abs)
-        # usefull for calibration
-        if check_flat:
-            flat_filters = self.flatdir.filters()
-            # check, if only one filter is used in data folder
-            if len(flat_filters) > 1:
-                self.display_error(
-                    "Found observations with more than one filter in flat "
-                    "folder")
-            # check if data folder filters match the flat fields
-            if flat_filters != data_filters:
-                self.display_error(
-                    "The filters of the flat fields do not match the filters "
-                    "in " + datafolder.abs)
-            # do the same checks for the flat-off data if given
-            if self.flatoffdir is not None:
-                flatoff_filters = self.flatoffdir.filters()
-                if len(flatoff_filters) > 1:
-                    self.display_error(
-                        "Found observations with more than one filter in flat-"
-                        "off folder")
-                if flatoff_filters != flat_filters:
-                    self.display_error(
-                        "The filters of the off-flat fields do not match the "
-                        "flat field filters.")
+    def check_filters(self):
+        # check, if only always the same filter is used in data folders
+        if self.obsfilter == '(null)' and self.do_filter_check:
+            folders = (
+                "flatdir", "flatoffdir", "sciencedir", "skydir", "stddir")
+            for folder in folders:
+                dfolder = getattr(self, folder)
+                if dfolder is not None:
+                    new = dfolder.filters()
+                    if len(new) > 1:
+                        self.display_error(
+                            "Found observations with more than one filter: " +
+                            dfolder.abs)
+                    if self.obsfilter != '(null)' and new != self.obsfilter:
+                        self.display_error(
+                            ("Filter in data folder does not match '%s': " %
+                             self.obsfilter) + self.flatdir.abs)
+                    self.obsfilter = new
 
     def set_coadd_filter(self, filterstring):
         if filterstring not in self.sciencedir.filters():
@@ -540,6 +531,7 @@ class Reduction(object):
                 self.display_error("master bias not found")
                 sys.exit(1)
         # queue data folders (optinal: have flatoff-dir)
+        self.check_filters()
         folders = [self.flatdir]
         IDs = [""]
         any_master_updated = False
@@ -552,7 +544,6 @@ class Reduction(object):
             filetags = folder.tags(ignore_sub=True)
             found_split_files = folder.contains_tag('')
             found_masterflat = folder.contains_master()
-            self.check_filters(folder, check_flat=True)
             # check flat norm explicitly
             if ID == "":
                 found_normflat = folder.search_flatnorm()
@@ -652,6 +643,7 @@ class Reduction(object):
                 self.display_error("master %s not found" % ID_biasdark)
                 sys.exit(1)
         # queue data folders (optinal: have flatoff-dir)
+        self.check_filters()
         folders = [self.sciencedir]
         IDs = [""]
         if self.skydir is not None:
@@ -668,7 +660,6 @@ class Reduction(object):
             found_split_files = folder.contains_tag('')
             found_OFC_folder = folder.contains("OFC_IMAGES")
             found_OFC_files = folder.contains_tag('OFC')
-            self.check_filters(folder, check_flat=True)
             # data verification
             if len(filetags) > 1:
                 self.display_header(job_message + ID)
@@ -775,6 +766,7 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("science folder not specified")
             sys.exit(1)
+        self.check_filters()
         folders = [self.sciencedir]
         IDs = [""]
         if self.stddir is not None:
@@ -803,7 +795,6 @@ class Reduction(object):
                 found_output_files = any(
                     seq.contains_tag(t + "B") for t in THELI_TAGS["OFCB"])
                 input_count = seq.fits_count()
-                self.check_filters(seq, check_flat=False)
                 # data verification
                 if len(filetags) > 1:
                     self.display_header(job_message + ID)
@@ -916,6 +907,7 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("science folder not specified")
             sys.exit(1)
+        self.check_filters()
         folders = [self.sciencedir]
         IDs = [""]
         if self.skydir is not None and self.reduce_skydir:
@@ -936,7 +928,6 @@ class Reduction(object):
                 folder.contains(t + "H_IMAGES") for t in THELI_TAGS["OFCH"])
             found_output_files = any(
                 folder.contains_tag(t + "H") for t in THELI_TAGS["OFCH"])
-            self.check_filters(folder, check_flat=False)
             # data verification
             if len(filetags) > 1:
                 self.display_header(job_message + ID)
@@ -982,6 +973,7 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("science folder not specified")
             sys.exit(1)
+        self.check_filters()
         folders = [self.sciencedir]
         IDs = [""]
         if self.skydir is not None and self.reduce_skydir:
@@ -1002,7 +994,6 @@ class Reduction(object):
                 folder.contains(t + "C_IMAGES") for t in THELI_TAGS["OFCC"])
             found_output_files = any(
                 folder.contains_tag(t + "C") for t in THELI_TAGS["OFCC"])
-            self.check_filters(folder, check_flat=False)
             # data verification
             if len(filetags) > 1:
                 self.display_header(job_message + ID)
@@ -1052,6 +1043,7 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("science folder not specified")
             sys.exit(1)
+        self.check_filters()
         folders = [self.sciencedir]
         IDs = [""]
         if self.skydir is not None and self.reduce_skydir:
@@ -1072,7 +1064,6 @@ class Reduction(object):
                 folder.contains(t + "D_IMAGES") for t in THELI_TAGS["OFCD"])
             found_output_files = any(
                 folder.contains_tag(t + "D") for t in THELI_TAGS["OFCD"])
-            self.check_filters(folder, check_flat=False)
             # data verification
             if len(filetags) > 1:
                 self.display_header(job_message + ID)
@@ -1116,6 +1107,7 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("science folder not specified")
             sys.exit(1)
+        self.check_filters()
         folders = [self.sciencedir]
         IDs = [""]
         if self.skydir is not None and self.reduce_skydir:
@@ -1129,7 +1121,6 @@ class Reduction(object):
         for folder, ID in zip(folders, IDs):
             filetags = folder.tags(ignore_sub=True)
             found_output_files = folder.contains_preview()
-            self.check_filters(folder, check_flat=False)
             # data verification
             if len(filetags) < 1:
                 self.display_header(job_message + ID)
@@ -1168,6 +1159,7 @@ class Reduction(object):
             self.display_error("science folder not specified")
             sys.exit(1)
         use_flat = self.params.get("V_GLOBW_UNIFORMWEIGHT") == "FALSE"
+        self.check_filters()
         if use_flat:
             if self.flatdir is None:
                 self.display_header(job_message)
@@ -1177,7 +1169,6 @@ class Reduction(object):
                 self.display_header(job_message)
                 self.display_error("master flat not found")
                 sys.exit(1)
-            self.check_filters(self.sciencedir, check_flat=True)
         # BUG: this is not intended: if many science folders have a shared
         # WEIGHTS folder, the global weight will always be reused, if the
         # reduction steps are not done all at once
@@ -1205,6 +1196,7 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("science folder not specified")
             sys.exit(1)
+        self.check_filters()
         folders = [self.sciencedir]
         IDs = [""]
         if self.skydir is not None and self.reduce_skydir:
@@ -1218,7 +1210,6 @@ class Reduction(object):
         for folder, ID in zip(folders, IDs):
             filetags = folder.tags(ignore_sub=True)
             found_output_files = folder.check_weight()
-            self.check_filters(folder, check_flat=False)
             # data verification
             if not redo and found_output_files:
                 self.display_header(job_message)
