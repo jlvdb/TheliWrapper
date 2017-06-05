@@ -123,18 +123,6 @@ class Reduction(object):
                 "unsupported text file display '%s'" % logdisplay)
             sys.exit(1)
         self.logdisplay = logdisplay
-        # fix GUI issues
-        #################
-        # 'debloom' renamed to 'fitsdebloom' in THELI executable folders
-        if not os.path.exists(os.path.join(DIRS["BIN"], "debloom")):
-            try:
-                os.symlink(
-                    os.path.join(DIRS["BIN"], "fitsdebloom"),
-                    os.path.join(DIRS["BIN"], "debloom"))
-            except PermissionError:
-                self.display_warning(
-                    "Linking error correction: do not have the permission "
-                    "to create links in '%s'\n" % DIRS["BIN"])
 
     def __str__(self):
         # print most important project parameters
