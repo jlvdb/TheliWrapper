@@ -110,26 +110,27 @@ def checked_call(script, arglist=None, parallel=False, **kwargs):
             for each ignored error it contains a tuple with line and message
             to disply for an ignored error
     """
-    check_system_lock()  # test if any other instance is running
+    # parse kwargs: verbosity, environment, errors to ignore
+    verbosity = kwargs["verb"] if "verb" in kwargs else 1
+    env = kwargs["env"] if "env" in kwargs else os.environ.copy()
+    ignoreerr = kwargs["ignoreerr"] if "ignoreerr" in kwargs else []
+    ignoremsg = kwargs["ignoremsg"] if "ignoremsg" in kwargs else []
+    # check requested script presence
+    scriptdir = DIRS["SCRIPTS"]
+    if not os.path.exists(os.path.join(scriptdir, script)):
+        raise FileNotFoundError("script does not exist:", script)
+    # assamble command
+    if parallel:
+        cmdstr = [os.path.join(".", "parallel_manager.sh"), script]
+    else:
+        cmdstr = [os.path.join(".", script)]
+    if arglist is not None:
+        cmdstr.extend(arglist)
+    # test if any other instance is running
+    check_system_lock()
+    # create a lock file, prohibiting the system to run a parallel task
+    os.system("touch %s 2>&1" % LOCKFILE)
     try:
-        # create a lock file, prohibiting the system to run a parallel task
-        os.system("touch %s 2>&1" % LOCKFILE)
-        # parse kwargs: verbosity, environment, errors to ignore
-        verbosity = kwargs["verb"] if "verb" in kwargs else 1
-        env = kwargs["env"] if "env" in kwargs else os.environ.copy()
-        ignoreerr = kwargs["ignoreerr"] if "ignoreerr" in kwargs else []
-        ignoremsg = kwargs["ignoremsg"] if "ignoremsg" in kwargs else []
-        # check requested script presence
-        scriptdir = DIRS["SCRIPTS"]
-        if not os.path.exists(os.path.join(scriptdir, script)):
-            raise FileNotFoundError("script does not exist:", script)
-        # assamble command
-        if parallel:
-            cmdstr = [os.path.join(".", "parallel_manager.sh"), script]
-        else:
-            cmdstr = [os.path.join(".", script)]
-        if arglist is not None:
-            cmdstr.extend(arglist)
         # execute command and get log
         call = subprocess.Popen(
             cmdstr, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -160,6 +161,10 @@ def checked_call(script, arglist=None, parallel=False, **kwargs):
             stdout = call.communicate()[0].decode("utf-8").splitlines()
             stdout.append("")
     except Exception as e:
+        try:
+            call.kill()
+        except Exception:
+            pass
         raise e
     else:
         # scan log for errors
