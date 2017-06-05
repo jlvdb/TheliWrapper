@@ -215,10 +215,12 @@ class Reduction(object):
                         self.display_error(
                             "Found observations with more than one filter: " +
                             dfolder.abs)
+                        sys.exit(1)
                     if self.obsfilter != '(null)' and new != self.obsfilter:
                         self.display_error(
                             ("Filter in data folder does not match '%s': " %
                              self.obsfilter) + self.flatdir.abs)
+                        sys.exit(1)
                     self.obsfilter = new
 
     def set_coadd_filter(self, filterstring):
@@ -1790,9 +1792,8 @@ class Reduction(object):
                 continue
             if redo and found_output_files and not found_weights:
                 self.display_header(job_message + ID)
-                self.display_warning(
-                    "no weight maps found - skipping redo")
-                continue
+                self.display_error("no weight maps found")
+                sys.exit(1)
             if redo and found_output_files and not found_headers:
                 self.display_header(job_message + ID)
                 self.display_warning(
