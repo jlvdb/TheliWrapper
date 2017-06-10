@@ -400,7 +400,6 @@ def extract_tag(filename, nchips):
             additinal '.sub' for a sky subtracted version of that image
     """
     fname, ext = os.path.splitext(os.path.split(filename)[1])
-    print(fname)
     try:  # tag is separated by an underscore
         base, tag = fname.rsplit("_", 1)
     except ValueError:
