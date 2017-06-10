@@ -344,10 +344,11 @@ def get_crossid_radius(pixscale):
         return 10.0 * pixscale
 
 
+'''
 def extract_tag(filename):
     """Extract the THELI progess tag from the filename of an image. Tag does
     not contain the chip number in case of a splitted image (example:
-    calibrated 1st chip with background model subtracted: image_1OFCB -> OFCB)
+    calibrated 1st chip, background model subtracted: filename_1OFCB -> OFCB)
 
     Arguments:
         filename [string]:
@@ -379,6 +380,42 @@ def extract_tag(filename):
                 return 'none'  # raw image
     # any other: have chip number + tag -> return tag only
     return ''.join([i for i in tag if not i.isdigit()])
+'''
+
+
+def extract_tag(filename, nchips):
+    """Extract the THELI progess tag from the filename of an image. Tag does
+    not contain the chip number in case of a splitted image (example:
+    calibrated 1st chip, background model subtracted: filename_1OFCB -> OFCB)
+
+    Arguments:
+        filename [string]:
+            valid path to a FITS image
+        nchips [int]:
+            number of chips the instrument has
+    Returns
+        tag [string]:
+            'none' in case of raw image, '' (empty) in case of splitted image,
+            'OFC' + any combination of ' BHCDP' for images after calibration,
+            additinal '.sub' for a sky subtracted version of that image
+    """
+    fname, ext = os.path.splitext(os.path.split(filename)[1])
+    print(fname)
+    try:  # tag is separated by an underscore
+        base, tag = fname.rsplit("_", 1)
+    except ValueError:
+        return 'none'  # raw image
+    # digit only tag means split image or raw image with '_' in file name
+    if all(char.isdigit() for char in tag):
+        # tags with leading zero or number larger than number of chips of
+        # instrument are raw images, else split images
+        if int(tag) > nchips and tag[0] == '0':
+            return 'none'
+        else:
+            return ''
+    # any other: have chip number + tag -> return tag only
+    else:
+        return ''.join([i for i in tag if not i.isdigit()])
 
 
 def natural_sort(tosort):

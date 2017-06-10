@@ -24,6 +24,8 @@ class Folder(object):
     Arguments:
         path [string]:
             path to the folder that is monitored
+        nchips [int]:
+            number of chips the instrument has
     """
 
     _fits_index = {}  # database of FITS files in the folder
@@ -31,10 +33,11 @@ class Folder(object):
     _update_delay = 0.05  # minimum time in seconds between two updates
     _last_call = "<module>"  # default calling function at initialization
 
-    def __init__(self, path):
+    def __init__(self, path, nchips=100):
         super(Folder, self).__init__()
         self.abs = os.path.abspath(path)
         self.parent, self.path = os.path.split(self.abs)
+        self.nchips = nchips
         self._update_index()  # generate initial FITS index
 
     def _update_index(self, force=False):
@@ -67,7 +70,7 @@ class Folder(object):
                 if f in self._fits_index:  # copy existing ones to new index
                     _new_index[f] = self._fits_index[f]
                 else:  # add new files, if they are not sky subtraction models
-                    newtag = extract_tag(f)
+                    newtag = extract_tag(f, self.nchips)
                     if not newtag.endswith(".sky"):
                         _new_index[f] = newtag
             self._fits_index = _new_index
