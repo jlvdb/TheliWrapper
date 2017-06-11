@@ -11,13 +11,16 @@ Command line wrapper for the THELI package for automated astronomical data reduc
 
 
 ### Demo Data
+
 Download and extract these data archives in the same folder (e.g. `DEMO`):
+
 * [Calibration - bias frames](https://github.com/jlvdb/TheliWrapper/raw/gh-pages/usage-demo/BIAS.tar.bz2)
 * [Calibration - flat fields](https://github.com/jlvdb/TheliWrapper/raw/gh-pages/usage-demo/FLAT.tar.bz2)
 * [Observation](https://github.com/jlvdb/TheliWrapper/raw/gh-pages/usage-demo/SCIENCE.tar.bz2)
+
 The result should look like:
     
-    DEMO  
-    |--> BIAS  
-    |--> FLAT  
-    |--> SCIENCE  
+    DEMO
+    |--> BIAS
+    |--> FLAT
+    |--> SCIENCE
