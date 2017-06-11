@@ -89,10 +89,8 @@ build it from source with
 
 #### THELI GUI
 Install the *THELI GUI*. It requires *Qt3* which has to be installed manualy on
-most systems. If you want to avoid this you can use
-
-    **missing link** -> gui-2.10.3-noGUI.tar.gz
-
+most systems. If you want to avoid this you can use a
+[modified version](https://github.com/jlvdb/TheliWrapper/raw/extra-data/INSTALL/gui-2.10.3_modified.tar.gz)
 which only contains the reduction scripts, parameter files and reference
 catalogues. If you want to be able to use the GUI as well,
 [download](https://www.astro.uni-bonn.de/theli/gui/download.html) the
