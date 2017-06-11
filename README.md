@@ -1,5 +1,4 @@
-<img src="https://github.com/jlvdb/TheliWrapper/blob/gh-pages/wiki_images/img/logo.jpeg" alt="TheliWrapper">
-
+![](https://github.com/jlvdb/TheliWrapper/blob/gh-pages/wiki_images/img/logo.jpeg)
 
 
 ### Installation Packages
