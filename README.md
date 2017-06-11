@@ -1,4 +1,4 @@
-![](https://github.com/jlvdb/TheliWrapper/blob/gh-pages/wiki_images/img/logo.jpeg)
+![](https://github.com/jlvdb/TheliWrapper/blob/gh-pages/wiki_images/img/logo.jpeg){:class="img-responsive"}
 
 
 ### Installation Packages
