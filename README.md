@@ -100,10 +100,10 @@ of your *THELI* installation: `[path to THELI]/bin/[your platform]/`
 
 #### TheliWrapper
 To install the *TheliWrapper*, just download the
-[source files](https://github.com/jlvdb/TheliWrapper) and copy them to your
-preferred destination. When you run `theli.py` for the first time it will
-locate the *THELI* configuration folder (`/home/user/.theli`) and will set up
-itself automatically.  
+[latest release](https://github.com/jlvdb/TheliWrapper/releases/latest) and copy
+them to your preferred destination. When you run `theli.py` for the first time
+it will locate the *THELI* configuration folder (`/home/user/.theli`) and will
+set up itself automatically.  
 Whenever you change your *THELI* installation, it may be necessary to delete
 `/home/janluca/.theli/theli_paths.py` such that it will be recreated.
 
