@@ -24,7 +24,7 @@ reduction with the *THELI* software package significantly.
 
 ## Usage
 
-For a detailed description and an usage demonstration, refere to the projects
+For a detailed description and an usage demonstration, refere to the project's
 [Wiki-page](https://github.com/jlvdb/TheliWrapper/wiki).
 
 
@@ -44,7 +44,7 @@ complete) list of components you will need to use the wrapper.
 * FFTW, GSL (GNU Scientific Library)
 * cfitsio, CCfits
 * LibTIFF, LibPNG
-* ..., depending on your system
+(depends on your system)
 
 #### Programs:
 * csh, wget
