@@ -1,6 +1,5 @@
 <img src="https://github.com/jlvdb/TheliWrapper/blob/gh-pages/wiki_images/img/logo.jpeg" alt="TheliWrapper">
 
-Command line wrapper for the THELI package for automated astronomical data reduction
 
 
 ### Installation Packages
