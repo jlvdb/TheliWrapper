@@ -27,6 +27,6 @@ Download and extract these data archives in the same folder (e.g. `DEMO`):
 The data structure should look like this:
     
     DEMO
-    |--> BIAS
-    |--> FLAT
-    |--> SCIENCE
+    ↳ BIAS
+    ↳ FLAT
+    ↳ SCIENCE
