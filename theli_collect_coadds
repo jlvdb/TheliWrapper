@@ -29,20 +29,23 @@ for root, dirs, files in os.walk(sourcefolder):
             # get coadd name from THELI's coadd folder (coadd_[filter])
             coaddname = coaddpath.split(os.sep)[-2]
             coaddtarget = os.path.join(destfolder, target, coaddname + ".fits")
-            coaddtarget = os.path.relpath(coaddpath, coaddtarget)
+            coaddpath = os.path.relpath(
+                coaddpath, os.path.split(coaddtarget)[0])
             weighttarget = ".weight".join(os.path.splitext(coaddtarget))
-            weighttarget = os.path.relpath(weightpath, weighttarget)
+            weightpath = os.path.relpath(
+                weightpath, os.path.split(weighttarget)[0])
             # link to the target destination
             print("processing:", coaddpath)
             try:
                 targetfolder = os.path.join(destfolder, target)
                 if not os.path.exists(targetfolder):
                     os.mkdir(targetfolder)
-                if os.path.exists(coaddtarget):
-                    os.remove(coaddtarget)
+                try:
+                    os.unlink(coaddtarget)
+                    os.unlink(weighttarget)
+                except Exception:
+                    pass
                 os.symlink(coaddpath, coaddtarget)
-                if os.path.exists(weighttarget):
-                    os.remove(weighttarget)
                 os.symlink(weightpath, weighttarget)
             except Exception:
                 print("ERROR: could not link current coadd to destination")
