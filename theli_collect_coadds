@@ -29,7 +29,9 @@ for root, dirs, files in os.walk(sourcefolder):
             # get coadd name from THELI's coadd folder (coadd_[filter])
             coaddname = coaddpath.split(os.sep)[-2]
             coaddtarget = os.path.join(destfolder, target, coaddname + ".fits")
+            coaddtarget = os.path.relpath(coaddpath, coaddtarget)
             weighttarget = ".weight".join(os.path.splitext(coaddtarget))
+            weighttarget = os.path.relpath(weightpath, weighttarget)
             # link to the target destination
             print("processing:", coaddpath)
             try:
