@@ -18,7 +18,7 @@ parser.add_argument('DESTINATION', help='Folder the coadds get linked into')
 args = parser.parse_args()
 
 sourcefolder = args.SOURCE
-destinfolder = args.DESTINATION
+destfolder = args.DESTINATION
 
 for root, dirs, files in os.walk(sourcefolder):
     for file in files:
@@ -28,12 +28,12 @@ for root, dirs, files in os.walk(sourcefolder):
             target = get_FITS_header_values(coaddpath, ["OBJECT"])[0]
             # get coadd name from THELI's coadd folder (coadd_[filter])
             coaddname = coaddpath.split(os.sep)[-2]
-            coaddtarget = os.path.join(destinfolder, target, coaddname + ".fits")
+            coaddtarget = os.path.join(destfolder, target, coaddname + ".fits")
             weighttarget = ".weight".join(os.path.splitext(coaddtarget))
             # link to the target destination
             print("processing:", coaddpath)
             try:
-                targetfolder = os.path.join(destinfolder, target)
+                targetfolder = os.path.join(destfolder, target)
                 if not os.path.exists(targetfolder):
                     os.mkdir(targetfolder)
                 if os.path.exists(coaddtarget):
