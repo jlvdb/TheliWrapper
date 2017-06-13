@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+import sys
+import os
+import glob
+import shutil
+import argparse
+
+from system.base import get_FITS_header_values
+
+
+parser = argparse.ArgumentParser(
+    description="Scans a folder for coadded images produced with THELI and "
+                "creates links to them in a destination folder. The links "
+                "will be contain the filter sting to identify the images"
+                "and are grouped in folder displaying the observed target.")
+parser.add_argument('SOURCE', help='Folder to scan for "coadd.fits" files')
+parser.add_argument('DESTINATION', help='Folder the coadds get linked into')
+args = parser.parse_args()
+
+sourcefolder = args.SOURCE
+destinfolder = args.DESTINATION
+
+for root, dirs, files in os.walk(sourcefolder):
+    for file in files:
+        if file == "coadd.fits":
+            coaddpath = os.path.join(root, file)
+            weightpath = ".weight".join(os.path.splitext(coaddpath))
+            target = get_FITS_header_values(coaddpath, ["OBJECT"])[0]
+            # get coadd name from THELI's coadd folder (coadd_[filter])
+            coaddname = coaddpath.split(os.sep)[-2]
+            coaddtarget = os.path.join(destinfolder, target, coaddname + ".fits")
+            weighttarget = ".weight".join(os.path.splitext(coaddtarget))
+            # link to the target destination
+            print("processing:", coaddpath)
+            try:
+                targetfolder = os.path.join(destinfolder, target)
+                if not os.path.exists(targetfolder):
+                    os.mkdir(targetfolder)
+                if os.path.exists(coaddtarget):
+                    os.remove(coaddtarget)
+                os.symlink(coaddpath, coaddtarget)
+                if os.path.exists(weighttarget):
+                    os.remove(weighttarget)
+                os.symlink(weightpath, weighttarget)
+            except Exception:
+                print("ERROR: could not link current coadd to destination")
