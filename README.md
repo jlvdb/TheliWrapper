@@ -26,10 +26,14 @@ For an overview of the *TheliWrapper*'s features, just refer to the
 > * Extensive documentation and online help
 
 
-## Usage
+## Getting started
 
-For a detailed description and an usage demonstration, refere to the project's
-[Wiki-page](https://github.com/jlvdb/TheliWrapper/wiki).
+This README file will guide you through the installation of the program and
+inform you about the current development stage or known issues.  
+For any other topic will be covered by the the project's
+[Wiki-page](https://github.com/jlvdb/TheliWrapper/wiki), giving documentation
+and an usage demonstration you can download and try yourself.  
+For any further problems, please contact the maintainer(s).
 
 
 ## Requirements
@@ -114,7 +118,7 @@ Whenever you change your *THELI* installation, it may be necessary to delete
 `/home/janluca/.theli/theli_paths.py` such that it will be recreated.
 
 
-## Issues
+## Project progress and known issues
 
 Not all components and features of the *THELI GUI* are implemented yet, as it
 is still under development. This sections gives you an overview over what you
@@ -149,4 +153,4 @@ the maintainer(s) or create a
 ## Maintainers
 
 [Jan Luca van den Busch](https://github.com/jlvdb)
-(Argelander Institute for Astronomy)
+([Argelander Institute for Astronomy](https://astro.uni-bonn.de/en))
