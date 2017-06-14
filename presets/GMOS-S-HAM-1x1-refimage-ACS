@@ -10,3 +10,6 @@ scp-posangle-maxerr       0.5
 scp-match-tolerance       1.5
 scp-mosaic-type           SAME_CRVAL
 sky-detect-mask-expand    3
+cd-mask-reject-threshold  5
+cd-mask-cluster-size      4
+cd-mask-border-width      2

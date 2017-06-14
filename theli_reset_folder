@@ -48,9 +48,12 @@ class Folder(object):
 
 
 parser = argparse.ArgumentParser(
-    description="Tool to restore a THELI data folder to its initial state")
+    description="Tool to restore a THELI data folder to its initial state. "
+                "This will only happen, if a folder named ORIGINALS is "
+                "present in that folder. CAUTION: All other files and folders "
+                "will be deleteted without warning.")
 parser.add_argument(
-    dest="FOLDERS", nargs='*', help="folder to restore")
+    dest="FOLDERS", nargs='*', help="folder(s) to be restored")
 args = parser.parse_args()
 
 
