@@ -7,8 +7,8 @@ It combines the simplicity of the *THELI GUI*'s preconfigured instruments and
 parameter files with the ability to do large scale batch processing for large
 observation projects.
 
-For an overview of the *TheliWrapper*'s features, just refer to the
-#### *THELI GUI* [webpage](https://www.astro.uni-bonn.de/theli/gui/):
+For an overview of the *TheliWrapper*'s features, we can refer to the
+*THELI GUI* [webpage](https://www.astro.uni-bonn.de/theli/gui/):
 
 > *THELI* is a powerful and easy-to-use package for astronomical image
   reduction, offering e.g.
@@ -29,12 +29,13 @@ For an overview of the *TheliWrapper*'s features, just refer to the
 ## About this README
 
 This file will guide you through the installation of the program and
-inform you about the current development stage or known issues.  
-For any other topic will be covered by the the project's
-[Wiki-page](https://github.com/jlvdb/TheliWrapper/wiki), giving
+inform you about the current development stage or known issues. Any
+other topic will be covered by the the project's
+[Wiki-page](https://github.com/jlvdb/TheliWrapper/wiki), giving more
 documentation and a step-by-step usage demonstration you can download
-and try to do yourself.  
-For any further problems, please contact the project maintainer(s) (see below).
+and try yourself.  
+For any further problems, please contact the project maintainer(s)
+(see below).
 
 
 ## Requirements
