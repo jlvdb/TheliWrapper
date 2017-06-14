@@ -85,7 +85,7 @@ requires *PLplot* with the *cairo* driver. On some linux distributions (e.g.
 Ubuntu, Linux Mint or Arch Linux) *scamp* can be found precompiled in the
 package repositories.
 Otherwise [download](https://www.astromatic.net/software/scamp) it and try to
-build it from source with
+build it from source (which can be tricky) with
 
     ./configure
     make
