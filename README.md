@@ -34,7 +34,7 @@ For any other topic will be covered by the the project's
 [Wiki-page](https://github.com/jlvdb/TheliWrapper/wiki), giving
 documentation and a step-by-step usage demonstration you can download
 and try to do yourself.  
-For any further problems, please contact the project maintainer(s).
+For any further problems, please contact the project maintainer(s) (see below).
 
 
 ## Requirements
