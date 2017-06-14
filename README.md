@@ -75,8 +75,8 @@ version, extract it and install it with
 #### THELI
 To install *THELI*,
 [download](https://www.astro.uni-bonn.de/theli/gui/download.html) and extract
-it and run the install scipt with `pipesetup/install.sh -m "ALL"` to build the
-package from source.
+it and run the install scipt in `pipesetup/` with `install.sh -m "ALL"` to
+build the package from source.
 
 #### Scamp
 It is highly recommended to install *scamp* to compute precise astrometric
