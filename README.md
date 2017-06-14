@@ -28,14 +28,13 @@ For an overview of the *TheliWrapper*'s features, we can refer to the
 
 ## About this README
 
-This file will guide you through the installation of the program and
-inform you about the current development stage or known issues. Any
-other topic will be covered by the the project's
+This file will guide you through the installation of the program and inform you
+about the current development stage or known issues. Any other topic will be
+covered by the the project's
 [Wiki-page](https://github.com/jlvdb/TheliWrapper/wiki), giving more
-documentation and a step-by-step usage demonstration you can download
-and try yourself.  
-For any further problems, please contact the project maintainer(s)
-(see below).
+documentation and a step-by-step usage demonstration you can download and try
+yourself.  
+For any further problems, please contact the project maintainer(s) (see below).
 
 
 ## Requirements
@@ -103,8 +102,8 @@ most systems. If you want to avoid this you can use a
 [modified version](https://github.com/jlvdb/TheliWrapper/raw/extra-data/INSTALL/gui-2.10.3_modified.tar.gz)
 which only contains the reduction scripts, parameter files and reference
 catalogues. If you want to be able to use the GUI as well,
-[download](https://www.astro.uni-bonn.de/theli/gui/download.html) the
-original version instead.  
+[download](https://www.astro.uni-bonn.de/theli/gui/download.html) the original
+version instead.  
 In both cases install it with `./install.sh` and copy the *scamp* binary to the
 binary folder of your *THELI* installation:
 
