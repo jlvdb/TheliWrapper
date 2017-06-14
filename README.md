@@ -99,8 +99,9 @@ which only contains the reduction scripts, parameter files and reference
 catalogues. If you want to be able to use the GUI as well,
 [download](https://www.astro.uni-bonn.de/theli/gui/download.html) the
 original version instead.  
-Install it with `./install.sh` and copy the *scamp* binary to the binary folder
-of your *THELI* installation: `[path to THELI]/bin/[your platform]/`
+In both cases install it with `./install.sh` and copy the *scamp* binary to the
+binary folder of your *THELI* installation:
+`[path to THELI]/bin/[your platform]/`
 
 #### TheliWrapper
 To install the *TheliWrapper*, just download the
