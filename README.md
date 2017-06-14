@@ -102,7 +102,7 @@ original version instead.
 In both cases install it with `./install.sh` and copy the *scamp* binary to the
 binary folder of your *THELI* installation:
 
-     `[path to THELI]/bin/[your platform]/`
+     [path to THELI]/bin/[your platform]/
 
 #### TheliWrapper
 To install the *TheliWrapper*, just download the
