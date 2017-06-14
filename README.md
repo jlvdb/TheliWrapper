@@ -140,9 +140,10 @@ cannot do yet, or what may have unexpected behaviour.
 * Animate
 * Prepare color picutre
 
-If you have any problems or notice any problems, please contact the
-maintainer(s) or post create a *new issue* on the
-[GitHub-page](https://github.com/jlvdb/TheliWrapper/issues).
+If you have any problems or notice any unexpected behaviour, please contact
+the maintainer(s) or create a
+[*new issue*](https://github.com/jlvdb/TheliWrapper/issues) (on the project's
+GitHub-page).
 
 
 ## Maintainers
