@@ -151,6 +151,15 @@ the maintainer(s) or create a
 (on the project's GitHub-page).
 
 
+## Acknowledgements
+
+Please cite the following two papers when publishing your scientific work based on *THELI*:
+
+> Schirmer M. 2013, ApJS, 209, 21: *THELI GUI – Convenient reduction of optical, near- and mid-infrared imaging data*
+
+> Erben, T., Schirmer, M., Dietrich, J. et al. 2005, AN, 326, 432: *GaBoDS: The Garching-Bonn Deep Survey. IV. Methods for the image reduction of multi-chip cameras demonstrated on data from the ESO Wide-Field Imager*
+
+
 ## Maintainers
 
 [Jan Luca van den Busch](https://github.com/jlvdb)
