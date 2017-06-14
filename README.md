@@ -7,7 +7,7 @@ It combines the simplicity of the *THELI GUI*'s preconfigured instruments and
 parameter files with the ability to do large scale batch processing for large
 observation projects.
 
-For a feature description, we can just refer to the
+For an overview of the *TheliWrapper*'s features, just refer to the
 #### *THELI GUI* [webpage](https://www.astro.uni-bonn.de/theli/gui/):
 
 > *THELI* is a powerful and easy-to-use package for astronomical image
