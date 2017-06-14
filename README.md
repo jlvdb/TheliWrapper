@@ -26,14 +26,15 @@ For an overview of the *TheliWrapper*'s features, just refer to the
 > * Extensive documentation and online help
 
 
-## Getting started
+## About this README
 
-This README file will guide you through the installation of the program and
+This file will guide you through the installation of the program and
 inform you about the current development stage or known issues.  
 For any other topic will be covered by the the project's
-[Wiki-page](https://github.com/jlvdb/TheliWrapper/wiki), giving documentation
-and an usage demonstration you can download and try yourself.  
-For any further problems, please contact the maintainer(s).
+[Wiki-page](https://github.com/jlvdb/TheliWrapper/wiki), giving
+documentation and a step-by-step usage demonstration you can download
+and try to do yourself.  
+For any further problems, please contact the project maintainer(s).
 
 
 ## Requirements
