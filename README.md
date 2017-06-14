@@ -1,4 +1,4 @@
-[# TheliWrapper](https://github.com/jlvdb/TheliWrapper/blob/extra-data/wiki_images/img/logo.jpeg)
+![# TheliWrapper](https://github.com/jlvdb/TheliWrapper/blob/extra-data/wiki_images/img/logo.jpeg)
 
 The *TheliWrapper* is a project to simplify the process of astronomical image
 reduction with the *THELI* (software package for astronomical image reduction
