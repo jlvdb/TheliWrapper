@@ -142,8 +142,8 @@ cannot do yet, or what may have unexpected behaviour.
 
 If you have any problems or notice any unexpected behaviour, please contact
 the maintainer(s) or create a
-[*new issue*](https://github.com/jlvdb/TheliWrapper/issues) (on the project's
-GitHub-page).
+[*new issue*](https://github.com/jlvdb/TheliWrapper/issues/new)
+(on the project's GitHub-page).
 
 
 ## Maintainers
