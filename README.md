@@ -79,11 +79,11 @@ it and run the install scipt in `pipesetup/` with `install.sh -m "ALL"` to
 build the package from source.
 
 #### Scamp
-It is highly recommended to install *scamp* to compute precise astrometric
-solutions. Although used by *THELI*, it is not part of the package itself and
-requires *PLplot* with the *cairo* driver. On some linux distributions (e.g.
-Ubuntu, Linux Mint or Arch Linux) *scamp* can be found precompiled in the
-package repositories.
+Even though *THELI* offers alternatives, it is highly recommended to install
+*scamp* to compute precise astrometric solutions. It is not part of the package
+itself, so has to be installed separately and requires *PLplot* with the
+*cairo*-driver. On some linux distributions (e.g. Ubuntu, Linux Mint or
+Arch Linux) *scamp* can be found precompiled in the package repositories.  
 Otherwise [download](https://www.astromatic.net/software/scamp) it and try to
 build it from source (which can be tricky) with
 
