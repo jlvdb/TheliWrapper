@@ -7,6 +7,7 @@ sxt-detect-thresh         1.3
 sxt-detect-min-area       7
 scp-posangle-maxerr       0.2
 scp-match-tolerance       1
+scp-sn-min                4
 scp-mosaic-type           SAME_CRVAL
 sky-detect-mask-expand    3
 cd-mask-reject-threshold  5
