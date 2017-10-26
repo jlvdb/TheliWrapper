@@ -40,8 +40,8 @@ For any further problems, please contact the project maintainer(s) (see below).
 ## Requirements
 
 The *TheliWrapper* is entirely written in Python 3, but it depends on external
-components which are written in Python 2 or C/C++. Here is a (not necessarily
-complete) list of components you will need to use the wrapper.
+components which are written in Python 2 or C/C++. Here is a list of components
+most users will need to install to use the wrapper.
 
 #### Python:
 * Python 2 and 3 (version >= 2.5 and version >= 3.4)
