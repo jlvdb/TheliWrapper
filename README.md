@@ -97,13 +97,13 @@ build it from source (which can be tricky) with
     make install
 
 #### THELI GUI
-Install the *THELI GUI*. It requires *Qt3* which has to be installed manualy on
-most systems. If you want to avoid this you can use a
-[modified version](https://github.com/jlvdb/TheliWrapper/raw/extra-data/INSTALL/gui-2.10.3_modified.tar.gz)
-which only contains the reduction scripts, parameter files and reference
-catalogues. If you want to be able to use the GUI as well,
-[download](https://www.astro.uni-bonn.de/theli/gui/download.html) the original
-version instead.  
+[Download](https://www.astro.uni-bonn.de/theli/gui/download.html) and install
+the *THELI GUI*. It requires *Qt3* which has to be installed manualy on most
+systems.
+> If you want to avoid this you can use a
+> [modified version](https://github.com/jlvdb/TheliWrapper/raw/extra-data/INSTALL/gui-2.10.3_modified.tar.gz)
+> which only contains the reduction scripts, parameter files and reference
+> catalogues. NOTE: Will be available in a future version of the TheliWrapper
 In both cases install it with `./install.sh` and copy the *scamp* binary to the
 binary folder of your *THELI* installation:
 
@@ -121,34 +121,28 @@ Whenever you change your *THELI* installation, it may be necessary to delete
 
 ## Project progress and known issues
 
-Not all components and features of the *THELI GUI* are implemented yet, as it
-is still under development. This sections gives you an overview over what you
-cannot do yet, or what may have unexpected behaviour.
-
-##### Features to reduce infrared data are experimental yet:
-* Cross talk correction
-* Squence splitting
-* Chop/nod sky subtraction
-* Collapse correction
-
-##### Some main features of the original *THELI GUI* are not implemented yet:
+This project is under development, even though the most important data
+recution steps are implented. Yet missing are:
 * Photometry (direct and indirect)
 * Constant sky model subtraction
 * Copying and restoring the astrometric solution to the image header
   manually
 
-##### The tasks in the *Miscellaneous* section are not implemented:
-* Combine folder of image
-* Imalyzer
-* Image statistics
-* Absolute photometric zeropoint
-* Animate
-* Prepare color picutre
+If you work with **(near/mid) infrared data** the following tools are availble
+but still experimental:
+* Cross talk correction
+* Squence splitting
+* Chop/nod sky subtraction
+* Collapse correction
 
 If you have any problems or notice any unexpected behaviour, please contact
-the maintainer(s) or create a
-[*new issue*](https://github.com/jlvdb/TheliWrapper/issues/new)
-(on the project's GitHub-page).
+the maintainer(s) or create a *new issue* on the project's GitHub-page.
+
+
+## Maintainers
+
+[Jan Luca van den Busch](https://github.com/jlvdb)
+([Argelander Institute for Astronomy](https://astro.uni-bonn.de/en))
 
 
 ## Acknowledgements
@@ -158,9 +152,3 @@ Please cite the following two papers when publishing your scientific work based 
 > Schirmer M. 2013, ApJS, 209, 21: *THELI GUI – Convenient reduction of optical, near- and mid-infrared imaging data*
 
 > Erben, T., Schirmer, M., Dietrich, J. et al. 2005, AN, 326, 432: *GaBoDS: The Garching-Bonn Deep Survey. IV. Methods for the image reduction of multi-chip cameras demonstrated on data from the ESO Wide-Field Imager*
-
-
-## Maintainers
-
-[Jan Luca van den Busch](https://github.com/jlvdb)
-([Argelander Institute for Astronomy](https://astro.uni-bonn.de/en))
