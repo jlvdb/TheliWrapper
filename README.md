@@ -98,16 +98,19 @@ build it from source (which can be tricky) with
 
 #### THELI GUI
 [Download](https://www.astro.uni-bonn.de/theli/gui/download.html) and install
-the *THELI GUI*. It requires *Qt3* which has to be installed manualy on most
-systems.
-> If you want to avoid this you can use a
-> [modified version](https://github.com/jlvdb/TheliWrapper/raw/extra-data/INSTALL/gui-2.10.3_modified.tar.gz)
-> which only contains the reduction scripts, parameter files and reference
-> catalogues. NOTE: Will be available in a future version of the TheliWrapper
-In both cases install it with `./install.sh` and copy the *scamp* binary to the
+the *THELI GUI* by using `./install.sh` and copy the *scamp* binary to the
 binary folder of your *THELI* installation:
 
      [path to THELI]/bin/[your platform]/
+
+The GUI requires *Qt3* which has to be installed manualy on most systems.
+
+> **NOTE: Will be available in a future version of the TheliWrapper**
+> If you want to avoid installing *Qt3* you can use a
+> [modified version](https://github.com/jlvdb/TheliWrapper/raw/extra-data/INSTALL/gui-2.10.3_modified.tar.gz)
+> which only contains the reduction scripts, parameter files and reference
+> catalogues.
+
 
 #### TheliWrapper
 To install the *TheliWrapper*, just download the
