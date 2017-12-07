@@ -452,7 +452,7 @@ class TheliParser(argparse.ArgumentParser):
         for i, job in enumerate(joblist):
             # check if they are valid
             if job not in parse_actions:
-                raise parser.error(
+                raise self.error(
                     "invalid job descriptor '%s', " % job +
                     "for help use --help-jobs")
             # replace the job key with the attributes from parse_actions
