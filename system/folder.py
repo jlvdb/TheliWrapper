@@ -40,7 +40,7 @@ class Folder(object):
         self.nchips = nchips
         self._update_index()  # generate initial FITS index
 
-    def _update_index(self, force=False):
+    def _update_index(self, force=True):
         """Update the internal index if a minimum time interval has passed or
         the calling external function changed.
 
@@ -158,6 +158,7 @@ class Folder(object):
 
     def filters(self):
         """List the filters of FITS images, if possible"""
+        self._update_index()
         filters = set()
         for f in self._fits_index:
             try:
