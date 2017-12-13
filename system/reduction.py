@@ -765,6 +765,8 @@ class Reduction(object):
                     ID = " (%s %d)" % (ID[2:-1], n)
                 if redo:
                     folder.delete("*FCB*")
+                    folder.delete("BACKGROUND")
+                    folder.delete("MASK_IMAGES")
                     folder.lift_content("OFC_IMAGES")
                 filetags = seq.tags(ignore_sub=True)
                 found_input_files = any(
