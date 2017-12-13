@@ -408,7 +408,7 @@ def extract_tag(filename, nchips):
     if all(char.isdigit() for char in tag):
         # tags with leading zero or number larger than number of chips of
         # instrument are raw images, else split images
-        if int(tag) > nchips and tag[0] == '0':
+        if int(tag) > nchips or tag[0] == '0':
             return 'none'
         else:
             return ''
