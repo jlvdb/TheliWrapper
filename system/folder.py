@@ -337,7 +337,7 @@ class Folder(object):
         THELI is running."""
         check_system_lock()  # exit to prevent data loss
         for entry in os.listdir(self.abs):
-            if fnmatch(target, entry):
+            if fnmatch(entry, target):
                 delete = os.path.join(self.abs, os.path.join(self.abs, entry))
                 if os.path.isdir(delete):  # delete folder
                     shutil.rmtree(delete)
