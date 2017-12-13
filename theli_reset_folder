@@ -47,15 +47,20 @@ class Folder(object):
             shutil.rmtree(subfolder)
 
 
-parser = argparse.ArgumentParser(
-    description="Tool to restore a THELI data folder to its initial state. "
-                "This will only happen, if a folder named ORIGINALS is "
-                "present in that folder. CAUTION: All other files and folders "
-                "will be deleteted without warning.")
-parser.add_argument(
-    dest="FOLDERS", nargs='*', help="folder(s) to be restored")
-args = parser.parse_args()
+def main():
+    parser = argparse.ArgumentParser(
+        description="Tool to restore a THELI data folder to its initial "
+                    "state. This will only happen, if a folder named "
+                    "ORIGINALS is present in that folder. CAUTION: All other "
+                    "files and folders will be deleteted without warning.")
+    parser.add_argument(
+        dest="FOLDERS", nargs='*', help="folder(s) to be restored")
+    args = parser.parse_args()
 
 
-for arg in args.FOLDERS:
-    Folder(os.path.abspath(os.path.normpath(arg))).restore()
+    for arg in args.FOLDERS:
+        Folder(os.path.abspath(os.path.normpath(arg))).restore()
+
+
+if __name__ == '__main__':
+    main()

@@ -17,42 +17,50 @@ parser.add_argument('SOURCE', help='Folder to scan for "coadd.fits" files')
 parser.add_argument('DESTINATION', help='Folder the coadds get linked into')
 parser.add_argument('--copy-files', action='store_true',
                     help='copy files instead of linking them to target folder')
-args = parser.parse_args()
 
-sourcefolder = args.SOURCE
-destfolder = args.DESTINATION
 
-for root, dirs, files in os.walk(sourcefolder):
-    for file in files:
-        if file == "coadd.fits":
-            coaddpath = os.path.join(root, file)
-            weightpath = ".weight".join(os.path.splitext(coaddpath))
-            target = get_FITS_header_values(coaddpath, ["OBJECT"])[0]
-            # link to the target destination
-            print("processing:", coaddpath)
-            try:
-                targetfolder = os.path.join(destfolder, target)
-                # get coadd name from THELI's coadd folder (coadd_[filter])
-                coaddname = coaddpath.split(os.sep)[-2] + ".fits"
-                coaddtarget = os.path.join(targetfolder, coaddname)
-                weighttarget = ".weight".join(os.path.splitext(coaddtarget))
-                if not os.path.exists(targetfolder):
-                    os.mkdir(targetfolder)
+def main():
+    args = parser.parse_args()
+
+    sourcefolder = args.SOURCE
+    destfolder = args.DESTINATION
+
+    for root, dirs, files in os.walk(sourcefolder):
+        for file in files:
+            if file == "coadd.fits":
+                coaddpath = os.path.join(root, file)
+                weightpath = ".weight".join(os.path.splitext(coaddpath))
+                target = get_FITS_header_values(coaddpath, ["OBJECT"])[0]
+                # link to the target destination
+                print("processing:", coaddpath)
                 try:
-                    # can copy/create links only, if files do not exist already
-                    os.unlink(coaddtarget)
-                    os.unlink(weighttarget)
-                except Exception:
-                    pass
-                if args.copy_files:
-                    shutil.copy(coaddpath, coaddtarget)
-                    shutil.copy(weightpath, weighttarget)
-                else:
-                    # make link relative to target folder
-                    coaddpath = os.path.relpath(coaddpath, targetfolder)
-                    weightpath = os.path.relpath(weightpath, targetfolder)
-                    os.symlink(coaddpath, coaddtarget)
-                    os.symlink(weightpath, weighttarget)
-            except Exception as e:
-                raise e
-                print("ERROR: could not link current coadd to destination")
+                    targetfolder = os.path.join(destfolder, target)
+                    # get coadd name from THELI's coadd folder (coadd_[filter])
+                    coaddname = coaddpath.split(os.sep)[-2] + ".fits"
+                    coaddtarget = os.path.join(targetfolder, coaddname)
+                    weighttarget = ".weight".join(
+                        os.path.splitext(coaddtarget))
+                    if not os.path.exists(targetfolder):
+                        os.mkdir(targetfolder)
+                    try:
+                        # can copy/create links only, if files do not exist
+                        os.unlink(coaddtarget)
+                        os.unlink(weighttarget)
+                    except Exception:
+                        pass
+                    if args.copy_files:
+                        shutil.copy(coaddpath, coaddtarget)
+                        shutil.copy(weightpath, weighttarget)
+                    else:
+                        # make link relative to target folder
+                        coaddpath = os.path.relpath(coaddpath, targetfolder)
+                        weightpath = os.path.relpath(weightpath, targetfolder)
+                        os.symlink(coaddpath, coaddtarget)
+                        os.symlink(weightpath, weighttarget)
+                except Exception as e:
+                    raise e
+                    print("ERROR: could not link current coadd to destination")
+
+
+if __name__ == '__main__':
+    main()
