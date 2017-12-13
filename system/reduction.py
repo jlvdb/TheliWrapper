@@ -312,7 +312,7 @@ class Reduction(object):
         self.check_return_code(code)
         self.display_separator()
 
-    def split_FITS_correct_header(self, params={}):
+    def split_FITS_correct_header(self, redo=False, params={}):
         self.params.set(params)
         correct_xtalk = (
             self.params.get("V_PRE_XTALK_NOR_CHECKED") != '0' or
@@ -328,6 +328,8 @@ class Reduction(object):
             folder = getattr(self, foldervar)
             if folder is None:
                 continue
+            if redo:
+                folder.restore()
             filetags = folder.tags(ignore_sub=True)
             found_original_files = folder.contains_tag('none')
             found_split_files = folder.contains_tag('')
@@ -364,7 +366,7 @@ class Reduction(object):
                     "Cross talk correction not implented yet")
         self.display_separator()
 
-    def create_links(self, chip, target, params={}):
+    def create_links(self, chip, target, redo=False, params={}):
         self.params.set(params)
         job_message = "Creating links"
         try:
@@ -395,8 +397,8 @@ class Reduction(object):
             self.check_return_code(code)
         self.display_separator()
 
-    def process_biases(self, minmode=None, maxmode=None, redo=False,
-                       params={}):
+    def process_biases(
+            self, minmode=None, maxmode=None, redo=False, params={}):
         self.params.set(params)
         job_message = "Processsing BIASes"
         # folder verification
@@ -404,6 +406,8 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("bias folder not specified")
             sys.exit(1)
+        if redo:
+            self.biasdir.delete_master()
         filetags = self.biasdir.tags(ignore_sub=True)
         found_split_files = self.biasdir.contains_tag('')
         found_masterbias = self.biasdir.contains_master()
@@ -418,11 +422,6 @@ class Reduction(object):
             self.display_success("master bias found")
             self.display_separator()
             return
-        if redo and found_masterbias and not found_split_files:
-            self.display_header(job_message)
-            self.display_warning("no split images found - skipping redo")
-            self.display_separator()
-            return
         if not found_split_files:
             self.display_header(job_message)
             self.display_error("no split images found")
@@ -433,8 +432,6 @@ class Reduction(object):
                 "need at least 3 exposures - skipping redo")
             sys.exit(1)
         # run jobs
-        if redo:
-            self.biasdir.delete_master()
         if minmode is not None and maxmode is not None:
             # optional: brightness level check
             self.display_header("Checking brightness levels")
@@ -458,6 +455,8 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("dark folder not specified")
             sys.exit(1)
+        if redo:
+            self.darkdir.delete_master()
         filetags = self.darkdir.tags(ignore_sub=True)
         found_split_files = self.darkdir.contains_tag('')
         found_masterdark = self.darkdir.contains_master()
@@ -472,11 +471,6 @@ class Reduction(object):
             self.display_success("master dark found")
             self.display_separator()
             return
-        if redo and found_masterdark and not found_split_files:
-            self.display_header(job_message)
-            self.display_warning("no split images found - skipping redo")
-            self.display_separator()
-            return
         if not found_split_files:
             self.display_header(job_message)
             self.display_error("no split images found")
@@ -487,8 +481,6 @@ class Reduction(object):
                 "need at least 3 exposures - skipping redo")
             sys.exit(1)
         # run jobs
-        if redo:
-            self.darkdir.delete_master()
         if minmode is not None and maxmode is not None:
             # optional: brightness level check
             self.display_header("Checking brightness levels")
@@ -534,6 +526,8 @@ class Reduction(object):
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
             filetags = folder.tags(ignore_sub=True)
+            if redo:
+                folder.delete_master()
             found_split_files = folder.contains_tag('')
             found_masterflat = folder.contains_master()
             # check flat norm explicitly
@@ -550,10 +544,6 @@ class Reduction(object):
                 self.display_header(job_message + ID)
                 self.display_success("master flat found")
                 continue
-            if redo and found_masterflat and not found_split_files:
-                self.display_header(job_message + ID)
-                self.display_warning("no split images found - skipping redo")
-                continue
             if not found_split_files:
                 self.display_header(job_message + ID)
                 self.display_error("no split images found")
@@ -564,8 +554,6 @@ class Reduction(object):
                     "need at least 3 exposures - skipping redo")
                 sys.exit(1)
             # run jobs
-            if redo:
-                folder.delete_master()
             if ID == "" and (minmode is not None and maxmode is not None):
                 # optional: brightness level check (flat only)
                 self.display_header("Checking brightness levels")
@@ -603,8 +591,9 @@ class Reduction(object):
             self.check_return_code(code)
         self.display_separator()
 
-    def calibrate_data(self, usedark=False, minmode=None, maxmode=None,
-                       redo=False, params={}):
+    def calibrate_data(
+            self, usedark=False, minmode=None, maxmode=None, redo=False,
+            params={}):
         self.params.set(params)
         # folder verification
         job_message = "Calibrating data"
@@ -647,8 +636,10 @@ class Reduction(object):
         if len(IDs) > 1:
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
+            if redo:
+                self.delete("*FC*")
+                self.lift_content("SPLIT_IMAGES")
             filetags = folder.tags(ignore_sub=True)
-            # found_split_folder = folder.contains("SPLIT_IMAGES")
             found_split_files = folder.contains_tag('')
             found_OFC_folder = folder.contains("OFC_IMAGES")
             found_OFC_files = folder.contains_tag('OFC')
@@ -657,14 +648,9 @@ class Reduction(object):
                 self.display_header(job_message + ID)
                 self.display_error("found multiple progress stages")
                 sys.exit(1)
-            if not redo and (found_OFC_files or found_OFC_folder):
+            if found_OFC_files or found_OFC_folder:
                 self.display_header(job_message + ID)
                 self.display_success("OFC images found")
-                continue
-            if redo and (found_OFC_files or found_OFC_folder) and \
-                    not found_split_files:
-                self.display_header(job_message + ID)
-                self.display_warning("no split images found - skipping redo")
                 continue
             if not found_split_files:
                 self.display_header(job_message + ID)
@@ -777,9 +763,10 @@ class Reduction(object):
                 ID = " (science)" if ID == "" and len(sequence) > 1 else ""
                 if len(sequence) > 1:
                     ID = " (%s %d)" % (ID[2:-1], n)
+                if redo:
+                    folder.delete("*FCB*")
+                    folder.lift_content("OFC_IMAGES")
                 filetags = seq.tags(ignore_sub=True)
-                # found_input_folder = any(
-                #     seq.contains(t + "_IMAGES") for t in THELI_TAGS["OFCB"])
                 found_input_files = any(
                     seq.contains_tag(t) for t in THELI_TAGS["OFCB"])
                 found_output_folder = any(
@@ -864,7 +851,6 @@ class Reduction(object):
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
             filetags = folder.tags(ignore_sub=True)
-            # found_OFC_files = folder.contains_tag('OFC')
             found_sequence = os.path.exists(folder.abs + "_S1")
             # data verification
             if len(filetags) > 1:
@@ -911,9 +897,13 @@ class Reduction(object):
         if len(IDs) > 1:
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
+            if redo:
+                folder.delete("*F*H*")
+                for tag in THELI_TAGS["OFCH"]:
+                    if folder.contains("%s_IMAGES" % tag):
+                        folder.lift_content("%s_IMAGES" % tag)
+                        break
             filetags = folder.tags(ignore_sub=True)
-            # found_input_folder = any(
-            #     folder.contains(t + "_IMAGES") for t in THELI_TAGS["OFCH"])
             found_input_files = any(
                 folder.contains_tag(t) for t in THELI_TAGS["OFCH"])
             found_output_folder = any(
@@ -977,9 +967,13 @@ class Reduction(object):
         if len(IDs) > 1:
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
+            if redo:
+                folder.delete("*FC*C*")
+                for tag in THELI_TAGS["OFCC"]:
+                    if folder.contains("%s_IMAGES" % tag):
+                        folder.lift_content("%s_IMAGES" % tag)
+                        break
             filetags = folder.tags(ignore_sub=True)
-            # found_input_folder = any(
-            #     folder.contains(t + "_IMAGES") for t in THELI_TAGS["OFCC"])
             found_input_files = any(
                 folder.contains_tag(t) for t in THELI_TAGS["OFCC"])
             found_output_folder = any(
@@ -1047,9 +1041,13 @@ class Reduction(object):
         if len(IDs) > 1:
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
+            if redo:
+                folder.delete("*FC*D*")
+                for tag in THELI_TAGS["OFCD"]:
+                    if folder.contains("%s_IMAGES" % tag):
+                        folder.lift_content("%s_IMAGES" % tag)
+                        break
             filetags = folder.tags(ignore_sub=True)
-            # found_input_folder = any(
-            #     folder.contains(t + "_IMAGES") for t in THELI_TAGS["OFCD"])
             found_input_files = any(
                 folder.contains_tag(t) for t in THELI_TAGS["OFCD"])
             found_output_folder = any(
@@ -1222,7 +1220,7 @@ class Reduction(object):
                 self.check_return_code(code)
         self.display_separator()
 
-    def distribute_target_sets(self, minoverlap, params={}):
+    def distribute_target_sets(self, minoverlap, redo=False, params={}):
         self.params.set(params)
         job_message = "Separating different target fields"
         # queue data folders
@@ -1401,7 +1399,7 @@ class Reduction(object):
             sys.exit(1)
         self.display_separator()
 
-    def absolute_photometry_indirect(self, params={}):
+    def absolute_photometry_indirect(self, redo=False, params={}):
         """
         # does not care for astrometry method
 
@@ -1435,7 +1433,7 @@ class Reduction(object):
         self.params.set(params)
         raise NotImplementedError()
 
-    def absolute_photometry_direct(self, params={}):
+    def absolute_photometry_direct(self, redo=False, params={}):
         """
         # does not care for astrometry method
 
@@ -1481,6 +1479,12 @@ class Reduction(object):
         """
         self.params.set(params)
         raise NotImplementedError()
+        if redo:
+            folder.delete("*FC*P*")
+            for tag in THELI_TAGS["OFCP"]:
+                if folder.contains("%s_IMAGES" % tag):
+                    folder.lift_content("%s_IMAGES" % tag)
+                    break
 
     def create_source_cat(self, redo=False, params={}):
         """
@@ -1559,8 +1563,9 @@ class Reduction(object):
             self.display_message("%d sources detected (avg.)" % detections)
         self.display_separator()
 
-    def astro_and_photometry(self, method="scamp", ignore_scamp_segfault=False,
-                             redo=False, params={}):
+    def astro_and_photometry(
+            self, method="scamp", ignore_scamp_segfault=False, redo=False,
+            params={}):
         """
         reload refcat from web if we have sky processing as well
         """
@@ -1653,21 +1658,21 @@ class Reduction(object):
                 self.check_return_code(code)
         self.display_separator()
 
-    def astrometry_update_header(self, params={}):
+    def astrometry_update_header(self, redo=False, params={}):
         """
         see: void theliForm::update_zeroheader
         """
         self.params.set(params)
         raise NotImplementedError()
 
-    def astrometry_restore_header(self, params={}):
+    def astrometry_restore_header(self, redo=False, params={}):
         """
         see: void theliForm::restore_header
         """
         self.params.set(params)
         raise NotImplementedError()
 
-    def sky_subtraction_helper(self, params={}):
+    def sky_subtraction_helper(self, redo=False, params={}):
         """
         for subtracting a constant sky
         THELI/gui/manualsky.ui.h
@@ -1864,7 +1869,7 @@ class Reduction(object):
             self.check_return_code(code)
         self.display_separator()
 
-    def resolve_links(self, params={}):
+    def resolve_links(self, redo=False, params={}):
         # if (command.find("resolvelinks.sh") != -1)
         # reply.append("Resolving link structure ...");
         self.params.set(params)
