@@ -20,7 +20,7 @@ parse_actions = {
     "Fs": {
         "name": "Split FITS / correct header",
         "func": "split_FITS_correct_header",
-        "para": [],
+        "para": ['redo'],
         "help": "Splits multi-extension FITS files, and "
                 "writes the THELI standard FITS header"},
     "Lc": {
@@ -101,7 +101,7 @@ parse_actions = {
     "Ds": {
         "name": "Distribute target sets",
         "func": "distribute_target_sets",
-        "para": ['image_min_overlap'],
+        "para": ['image_min_overlap', 'redo'],
         "help": "Identifies image associations on the sky. The SCIENCE "
                 "directory field in the Initialise section will then "
                 "point to the first association found, SCIENCE_set_1."},
@@ -116,13 +116,13 @@ parse_actions = {
     "Pi": {
         "name": "Absolute photometry (indirect)",
         "func": "absolute_photometry_indirect",
-        "para": [],
+        "para": ['redo'],
         "help": "Attempts to derive absolute photometric "
                 "zeropoints for each exposure."},
     "Pd": {
         "name": "Absolute photometry (direct)",
         "func": "absolute_photometry_direct",
-        "para": [],
+        "para": ['redo'],
         "help": "Attempts to derive absolute photometric "
                 "zeropoints for each exposure."},
     "As": {

@@ -366,7 +366,7 @@ class Reduction(object):
                     "Cross talk correction not implented yet")
         self.display_separator()
 
-    def create_links(self, chip, target, redo=False, params={}):
+    def create_links(self, chip, target, params={}):
         self.params.set(params)
         job_message = "Creating links"
         try:
@@ -870,8 +870,8 @@ class Reduction(object):
             self.check_return_code(code)
         self.display_separator()
 
-    def chop_nod_skysub(self, pattern="0110", revert=False, redo=False,
-                        params={}):
+    def chop_nod_skysub(
+            self, pattern="0110", revert=False, redo=False, params={}):
         self.params.set(params)
         job_message = "Subtracting sky by chop-nod"
         if self.instrument.TYPE != "MIR":
@@ -1658,21 +1658,21 @@ class Reduction(object):
                 self.check_return_code(code)
         self.display_separator()
 
-    def astrometry_update_header(self, redo=False, params={}):
+    def astrometry_update_header(self, params={}):
         """
         see: void theliForm::update_zeroheader
         """
         self.params.set(params)
         raise NotImplementedError()
 
-    def astrometry_restore_header(self, redo=False, params={}):
+    def astrometry_restore_header(self, params={}):
         """
         see: void theliForm::restore_header
         """
         self.params.set(params)
         raise NotImplementedError()
 
-    def sky_subtraction_helper(self, redo=False, params={}):
+    def sky_subtraction_helper(self, params={}):
         """
         for subtracting a constant sky
         THELI/gui/manualsky.ui.h
