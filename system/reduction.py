@@ -28,11 +28,13 @@ class Reduction(object):
 
     obsfilter = '(null)'
 
-    def __init__(self, instrument, maindir, title="auto",
-                 biasdir=None, darkdir=None, flatdir=None, flatoffdir=None,
-                 sciencedir=None, skydir=None, stddir=None,
-                 reduce_skydir=False, ncpus=None, verbosity="normal",
-                 logdisplay="none", check_filters=True, parseparams={}):
+    def __init__(
+            self, instrument, maindir, title="auto",
+            biasdir=None, darkdir=None, flatdir=None, flatoffdir=None,
+            sciencedir=None, skydir=None, stddir=None,
+            reduce_skydir=False, ncpus=None, verbosity="normal",
+            logdisplay="none", check_filters=True,
+            ignore_weight_timestamp=False, parseparams={}):
         super(Reduction, self).__init__()
         # set the main folder
         self.maindir = os.path.abspath(maindir)
@@ -1761,7 +1763,8 @@ class Reduction(object):
             filetags = folder.tags(ignore_sub=True)
             found_input_files = any(
                 folder.contains_tag(t) for t in THELI_TAGS["OFC.sub"])
-            found_weights = folder.check_weight()
+            found_weights = (
+                folder.check_weight() or self.ignore_weight_timestamp)
             found_headers = folder.contains("headers")
             found_output_files = folder.contains_coadds()
             # data verification

@@ -287,9 +287,25 @@ class ActionHelpTheli(argparse.Action):
         string = "{:{pad}}".format(string, pad=self.help_pad)
         if len(string) > self.help_pad:
             string += "\n" + " " * self.help_pad
+        # display default value at help text end
+        # possible types: float, int, string, empty string -> represents None
+        try:
+            if type(param["defa"]) == float:
+                defaultstr = ("%f" % param["defa"]).rstrip("0")
+                if defaultstr.endswith("."):
+                    defaultstr += "0"
+            elif type(param["defa"]) == int:
+                defaultstr = "%d" % param["defa"]
+            elif param["defa"] == "":
+                defaultstr = "None"
+            else:
+                defaultstr = param["defa"]
+            helpstr = param["help"] + " [default: %s]" % defaultstr
+        except KeyError:
+            helpstr = param["help"]
         # wrap long lines and keep indentation
         helpstr = ("\n" + self.help_pad * " ").join(
-            textwrap.wrap(param["help"], width=(self.width - self.help_pad)))
+            textwrap.wrap(helpstr, width=(self.width - self.help_pad)))
         return string + helpstr
 
     def print_help(self, pattern, match_jobs_only=False):
@@ -557,6 +573,9 @@ optargs.add_argument(
 optargs.add_argument(
     "--disable-filter-check", action="store_false",
     help="Disable the instrument filter check and comparison")
+optargs.add_argument(
+    "--ignore-weight-timestamp", action="store_true",
+    help="Disable checking if weight images are up to date with exposures")
 optargs.add_argument(
     "--verbosity", "-v", type=str, default="normal",
     choices=("quiet", "normal", "full"))
