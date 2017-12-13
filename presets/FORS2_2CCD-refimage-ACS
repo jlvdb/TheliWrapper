@@ -1,0 +1,13 @@
+bg-detect-thresh          2
+bg-detect-min-area        10
+bg-detect-mask-expand     3
+ref-cat                   Image
+ref-image-detect-thresh   12
+ref-image-detect-min-area 20
+sxt-detect-thresh         4
+sxt-detect-min-area       10
+sky-detect-thresh         2
+sky-detect-min-area       5
+cd-mask-reject-threshold  5
+cd-mask-cluster-size      2
+cd-mask-border-width      1
