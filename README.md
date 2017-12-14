@@ -105,11 +105,11 @@ binary folder of your *THELI* installation:
 
 The GUI requires *Qt3* which has to be installed manualy on most systems.
 
-> **NOTE: Will be available in a future version of the TheliWrapper**  
+> **Since version 0.6.1 of the TheliWrapper**  
 > If you want to avoid installing *Qt3* you can use a
 > [modified version](https://github.com/jlvdb/TheliWrapper/raw/extra-data/INSTALL/gui-2.10.3_modified.tar.gz)
-> which only contains the reduction scripts, parameter files and reference
-> catalogues.
+> which ships all functionality of the GUI except the graphical window
+> (which requires *Qt3*).
 
 
 #### TheliWrapper
