@@ -48,11 +48,6 @@ class ActionParseFile(argparse.Action):
         super(ActionParseFile, self).__init__(option_strings, dest, **kwargs)
 
     def __call__(self, parser, namespace, configfile, option_string=None):
-        # if configfile does not exist, look into presets folder
-        if not os.path.exists(configfile):
-            base_folder = os.path.split(
-                os.path.dirname(os.path.realpath(__file__)))[0]
-            configfile = os.path.join(base_folder, "presets", configfile)
         try:
             with open(configfile) as conf:
                 content = conf.readlines()
