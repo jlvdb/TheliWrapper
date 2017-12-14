@@ -15,13 +15,49 @@ try:
     from theli_paths import DIRS, CMDTOOLS, CMDSCRIPTS, LOCKFILE, LOGFILE
 except ImportError:
     print("\nSetting up system for first usage...")
+    # set up main data folders
+    DIRS = {}
+    DIRS["HOME"] = os.environ["HOME"]
+    DIRS["PIPEHOME"] = os.path.join(DIRS["HOME"], ".theli")
+    DIRS["LOGFOLDER"] = os.path.join(DIRS["PIPEHOME"], "script_logs")
+    # create theli home folder structure if necessary
+    if not os.path.exists(DIRS["PIPEHOME"]):
+        os.mkdir(DIRS["PIPEHOME"])
+    if not os.path.exists(os.path.join(DIRS["PIPEHOME"], "tmp")):
+        os.mkdir(os.path.join(DIRS["PIPEHOME"], "tmp"))
+    if not os.path.exists(os.path.join(DIRS["PIPEHOME"], "scripts")):
+        os.mkdir(os.path.join(DIRS["PIPEHOME"], "scripts"))
+    if not os.path.exists(os.path.join(DIRS["PIPEHOME"], "userinstruments")):
+        os.mkdir(os.path.join(DIRS["PIPEHOME"], "userinstruments"))
+    # check if file links exist
+    script_link_folder = os.path.join(DIRS["PIPEHOME"], "scripts")
+    if any(
+            not os.path.exists(os.path.join(script_link_folder, f))
+            for f in ("progs.ini", "bash.include", "bash_functions.include")):
+        print("enter path to folder containing THELI installation 'theli'")
+        theli_folder = ""
+        while not os.path.exists(theli_folder):
+            theli_folder = input("> ")
+            try:
+                theli_folder = os.path.expanduser(theli_folder)
+                assert(os.path.exists(os.path.join(theli_folder, "theli")))
+            except AssertionError:
+                print("folder '%s' does not contain 'theli'" % theli_folder)
+            except Exception:
+                print("file path invalid")
+        print("found THELI installation in '%s'" % theli_folder)
+        gui_folder = os.path.join(theli_folder, "gui")
+        if not os.path.exists(gui_folder):
+            print("THELI GUI installation not found")
+            sys.exit(1)
+        # link to files in theli folder
+        for dest in ("progs.ini", "bash.include", "bash_functions.include"):
+            os.symlink(
+                os.path.join(gui_folder, "scripts", dest),
+                os.path.join(script_link_folder, dest))
     # paths read from "progs.ini": folders, binaries, scripts and configuration
     CMDTOOLS = {}  # binaries
     CMDSCRIPTS = {}  # scripts
-    DIRS = {}  # folders
-    DIRS["HOME"] = os.path.expanduser("~")
-    DIRS["PIPEHOME"] = os.path.join(DIRS["HOME"], ".theli")
-    DIRS["LOGFOLDER"] = os.path.join(DIRS["PIPEHOME"], "script_logs")
     with open(os.path.join(DIRS["PIPEHOME"], "scripts", "progs.ini")) as ini:
         # progs.ini is a shell script with variables to replace
         for line in ini:
