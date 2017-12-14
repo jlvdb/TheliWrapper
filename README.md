@@ -97,6 +97,12 @@ build it from source (which can be tricky) with
     make install
 
 #### THELI GUI
+> **Since version 0.6.1 of the TheliWrapper**  
+> If you want to avoid installing *Qt3* you can use a
+> [modified version](https://github.com/jlvdb/TheliWrapper/raw/extra-data/INSTALL/gui-2.10.3_modified.tar.gz)
+> which ships all functionality of the GUI except the graphical window
+> (which requires *Qt3*).
+
 [Download](https://www.astro.uni-bonn.de/theli/gui/download.html) and install
 the *THELI GUI* by using `./install.sh` and copy the *scamp* binary to the
 binary folder of your *THELI* installation:
@@ -105,20 +111,13 @@ binary folder of your *THELI* installation:
 
 The GUI requires *Qt3* which has to be installed manualy on most systems.
 
-> **Since version 0.6.1 of the TheliWrapper**  
-> If you want to avoid installing *Qt3* you can use a
-> [modified version](https://github.com/jlvdb/TheliWrapper/raw/extra-data/INSTALL/gui-2.10.3_modified.tar.gz)
-> which ships all functionality of the GUI except the graphical window
-> (which requires *Qt3*).
-
-
 #### TheliWrapper
 To install the *TheliWrapper*, just download the
 [latest release](https://github.com/jlvdb/TheliWrapper/releases/latest) and
 copy and extract it to your preferred destination. When you run `theli.py` for
-the first time it will locate the *THELI* configuration folder
-(`/home/user/.theli`) and will set up itself automatically.  
-Whenever you change your *THELI* installation, it may be necessary to delete
+the first time it may ask you to locate the *THELI* installation folder (root
+folder which contains the `theli` link) and will set up itself automatically.  
+Whenever you change your *THELI* installation, it will be necessary to delete
 `/home/janluca/.theli/theli_paths.py` such that it will be recreated.
 
 
