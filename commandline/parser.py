@@ -57,7 +57,7 @@ class ActionParseFile(argparse.Action):
             raise parser.error(
                 "cannot read from parameter file: %s" % configfile)
         # copy the values positional command line parameters
-        arguments = [namespace.jobs, namespace.inst]
+        arguments = [namespace.inst]
         # convert file content to command line arguments and parse them
         for line in content:
             line = line.strip()
@@ -72,13 +72,13 @@ class ActionParseFile(argparse.Action):
         # write the new arguments to the parameter name space
         for arg in vars(new_args):
             # make sure that folders are not parsed in configureation file
-            if arg not in ("main", "bias", "dark", "flat", "flatoff",
+            if arg not in ("jobs", "main", "bias", "dark", "flat", "flatoff",
                            "science", "sky", "standard"):
                 setattr(namespace, arg, getattr(new_args, arg))
             elif arg is None:
                 parser.error(
-                    "parsing data folders in configuration file is not " +
-                    "allowed")
+                    "parsing jobs or data folders in configuration file is " +
+                    "not permitted")
 
 
 def read_theli_parameter_file(args):
