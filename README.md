@@ -149,7 +149,8 @@ the maintainer(s) or create a *new issue* on the project's GitHub-page.
 
 ## Acknowledgements
 
-Please cite the following two papers when publishing your scientific work based on *THELI*:
+Please include the URL of this repository in your acknowledgments and cite the
+following two papers when publishing your scientific work based on *THELI*:
 
 > Schirmer M. 2013, ApJS, 209, 21: *THELI GUI – Convenient reduction of optical, near- and mid-infrared imaging data*
 
