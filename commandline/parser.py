@@ -559,12 +559,17 @@ Parser = TheliParser(
     formatter_class=lambda prog: argparse.HelpFormatter(
         prog, max_help_position=28))
 
+"""
 Parser.add_argument(
     'jobs', metavar='JOBLIST',
     help="listing of job descriptors (see --help-jobs)")
+"""
 Parser.add_argument(
     'inst', metavar="INST",
     help="THELI instrument identification string")
+Parser.add_argument(
+    '-j', '--jobs', metavar='JOBLIST', type=str, default="",
+    help="listing of job descriptors (see --help-jobs)")
 
 presetgroup = Parser.add_argument_group(title="configuration files")
 presetgroup.add_argument(
@@ -586,22 +591,22 @@ foldergroup.add_argument(
     '--bias', '-b', metavar="DIR",
     help="bias frames")
 foldergroup.add_argument(
-    '--dark', '-d', metavar="DIR", type=TypePath, type=TypePath,
+    '--dark', '-d', metavar="DIR",
     help="dark frames")
 foldergroup.add_argument(
-    '--flat', '-f', metavar="DIR", type=TypePath,
+    '--flat', '-f', metavar="DIR",
     help="flat fields")
 foldergroup.add_argument(
-    '--flatoff', '-fo', metavar="DIR", type=TypePath,
+    '--flatoff', '-fo', metavar="DIR",
     help="flat-off fields (NIR)")
 foldergroup.add_argument(
-    '--science', '-s', metavar="DIR", type=TypePath,
+    '--science', '-s', metavar="DIR",
     help="target observations")
 foldergroup.add_argument(
-    '--sky', '-sky', metavar="DIR", type=TypePath,
+    '--sky', '-sky', metavar="DIR",
     help="blank sky observations")
 foldergroup.add_argument(
-    '--standard', '-std', metavar="DIR", type=TypePath,
+    '--standard', '-std', metavar="DIR",
     help="standard field observations")
 
 optargs = Parser.add_argument_group(title="optional arguments")
