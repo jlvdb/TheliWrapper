@@ -637,8 +637,8 @@ class Reduction(object):
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
             if redo:
-                self.delete("*FC*")
-                self.lift_content("SPLIT_IMAGES")
+                folder.delete("*FC*")
+                folder.lift_content("SPLIT_IMAGES")
             filetags = folder.tags(ignore_sub=True)
             found_split_files = folder.contains_tag('')
             found_OFC_folder = folder.contains("OFC_IMAGES")
