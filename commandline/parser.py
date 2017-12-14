@@ -37,8 +37,7 @@ except AssertionError:
 
 class ActionParseFile(argparse.Action):
     """Read a parameter file with optinal arguments and parse it to the
-    parameter name space. If the file (-path) does not exist, look into the
-    ../preset folder
+    parameter name space.
 
     Arguments:
         arguments are parsed by argparse
@@ -48,6 +47,7 @@ class ActionParseFile(argparse.Action):
         super(ActionParseFile, self).__init__(option_strings, dest, **kwargs)
 
     def __call__(self, parser, namespace, configfile, option_string=None):
+        configfile = os.path.expanduser(configfile)
         try:
             with open(configfile) as conf:
                 content = conf.readlines()
@@ -82,7 +82,6 @@ class ActionParseFile(argparse.Action):
 
 
 def read_theli_parameter_file(args):
-    setattr(args, "config_save", os.path.expanduser(args.config_save))
     # get maximum length of parameter flags
     maxlen = 0
     for group in sorted(parse_parameters.keys()):
@@ -479,6 +478,16 @@ def TypeNumberEmpty(type):
     return type_test  # closure being of fixed type
 
 
+def TypePath(path):
+    """Substitute home variable in path automatically.
+
+    Arguments:
+        path [string]:
+            parsed file path
+    """
+    return os.path.expanduser(path)
+
+
 class TheliParser(argparse.ArgumentParser):
     """Argument parser with custom parsing method that handles the argument
     conversion. Maps choices to internal values, creates the list of jobs to
@@ -563,36 +572,36 @@ presetgroup.add_argument(
     help="configuration file containing THELI parameters, either file path "
          "or name of a file in the 'presets' folder")
 presetgroup.add_argument(
-    "--config-save", metavar="FILE",
+    "--config-save", metavar="FILE", type=TypePath,
     help="write current set of parsed THELI parameters to file and exit")
 
 foldergroup = Parser.add_argument_group(
     title="data folders",
     description="data folders, must be all subfolders of the root/main-folder")
 foldergroup.add_argument(
-    '--main', '-m', metavar='ROOTDIR', default=os.getcwd(),
+    '--main', '-m', metavar='ROOTDIR', default=os.getcwd(), type=TypePath,
     help="root/main folder containing all data, defaults to current working "
          "directory")
 foldergroup.add_argument(
     '--bias', '-b', metavar="DIR",
     help="bias frames")
 foldergroup.add_argument(
-    '--dark', '-d', metavar="DIR",
+    '--dark', '-d', metavar="DIR", type=TypePath, type=TypePath,
     help="dark frames")
 foldergroup.add_argument(
-    '--flat', '-f', metavar="DIR",
+    '--flat', '-f', metavar="DIR", type=TypePath,
     help="flat fields")
 foldergroup.add_argument(
-    '--flatoff', '-fo', metavar="DIR",
+    '--flatoff', '-fo', metavar="DIR", type=TypePath,
     help="flat-off fields (NIR)")
 foldergroup.add_argument(
-    '--science', '-s', metavar="DIR",
+    '--science', '-s', metavar="DIR", type=TypePath,
     help="target observations")
 foldergroup.add_argument(
-    '--sky', '-sky', metavar="DIR",
+    '--sky', '-sky', metavar="DIR", type=TypePath,
     help="blank sky observations")
 foldergroup.add_argument(
-    '--standard', '-std', metavar="DIR",
+    '--standard', '-std', metavar="DIR", type=TypePath,
     help="standard field observations")
 
 optargs = Parser.add_argument_group(title="optional arguments")
