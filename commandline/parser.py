@@ -86,6 +86,54 @@ class ActionParseFile(argparse.Action):
                     "allowed")
 
 
+def read_theli_parameter_file(args):
+    setattr(args, "config_save", os.path.expanduser(args.config_save))
+    # get maximum length of parameter flags
+    maxlen = 0
+    for group in sorted(parse_parameters.keys()):
+        for param in sorted(parse_parameters[group].keys()):
+            maxlen = max(maxlen, len(param))
+    # loop through parsed arguments and create parameter file in memory
+    # print parameters in groups, omit group, if all parameters are default
+    file_lines = {}
+    for group in sorted(parse_parameters.keys()):
+        new_lines = []
+        for param in sorted(parse_parameters[group].keys()):
+            name = "{:{maxlen}s}    ".format(param, maxlen=maxlen)
+            # look up parser data
+            p_param = param[2:].replace("-", "_")
+            p_value = getattr(args, p_param)
+            try:
+                p_default = parse_parameters[group][param]["defa"]
+                # reverse mapping of special parameter formats
+                if "choi" in parse_parameters[group][param]:
+                    p_choices = parse_parameters[group][param]["choi"]
+                    p_subst = parse_parameters[group][param]["maps"]
+                    # look up index of substituted value and take corresponding
+                    # expected input value of parser
+                    idx = p_subst.index(p_value)
+                    p_value = p_choices[idx]
+                # only include values which are not None and not at default
+                if p_value is not None and p_default != p_value:
+                    new_lines.append(name + str(p_value))
+            except KeyError:
+                continue
+        if len(new_lines) > 0:
+            file_lines[group] = new_lines
+    # write file to disk
+    if len(file_lines) == 0:
+        print("No parameters differing from default configuration")
+    else:
+        print("Writing current THELI parameters to '%s'" % args.config_save)
+        with open(args.config_save, "w") as f:
+            f.write("# theli.py parameter file\n")
+            f.write("# created for instrument: %s\n" % (args.inst))
+            for group in sorted(file_lines.keys()):
+                f.write("\n# %s\n" % group)
+                for line in file_lines[group]:
+                    f.write(line + "\n")
+
+
 class ActionHelpJob(argparse.Action):
     """Print job help on screen, if --help-jobs is used and exit. Displays the
     job abbreviations for use with JOBLIST, short description and help text.
@@ -514,11 +562,14 @@ Parser.add_argument(
     'inst', metavar="INST",
     help="THELI instrument identification string")
 
-presetgroup = Parser.add_argument_group(title="configuration file")
+presetgroup = Parser.add_argument_group(title="configuration files")
 presetgroup.add_argument(
     "--config", "-c", metavar="FILE", action=ActionParseFile,
     help="configuration file containing THELI parameters, either file path "
          "or name of a file in the 'presets' folder")
+presetgroup.add_argument(
+    "--config-save", metavar="FILE",
+    help="write current set of parsed THELI parameters to file and exit")
 
 foldergroup = Parser.add_argument_group(
     title="data folders",
@@ -612,15 +663,16 @@ helpgroup.add_argument(
     help="show this help message and exit")
 helpgroup.add_argument(
     "--help-jobs", metavar='jobkey', action=ActionHelpJob,
-    help="list of job-keys for JOBLIST parameter or "
-         "list THELI parameters belonging to a job [jobkey]")
+    help="show list of job-keys for JOBLIST parameter or "
+         "list THELI parameters belonging to a job [jobkey] and exit")
 helpgroup.add_argument(
     "--help-instruments", metavar="inst", action=ActionHelpInst,
-    help="list of availble instruments or properties of instrument [inst]")
+    help="show list of availble instruments or properties of instrument "
+         "[inst] and exit")
 helpgroup.add_argument(
     "--help-parameters", metavar='pattern', action=ActionHelpTheli,
-    help="list of THELI reduction parameters in groups, "
-         "can be filtered with optional [pattern]")
+    help="show list of THELI reduction parameters in groups, "
+         "can be filtered with optional [pattern] and exit")
 
 helpgroup.add_argument(
     '--version', action=ActionVersion,
