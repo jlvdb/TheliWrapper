@@ -10,7 +10,7 @@ from itertools import combinations
 
 try:
     # import user specific paths
-    _theli_home = os.path.join(os.path.expanduser("~"), ".theli")
+    _theli_home = os.path.join(os.environ["HOME"], ".theli")
     sys.path.append(_theli_home)
     from theli_paths import DIRS, CMDTOOLS, CMDSCRIPTS, LOCKFILE, LOGFILE
 except ImportError:
@@ -45,7 +45,7 @@ except ImportError:
                 print("folder '%s' does not contain 'theli'" % theli_folder)
             except Exception:
                 print("file path invalid")
-        print("found THELI installation in '%s'" % theli_folder)
+        print("found THELI installation in '%s'\n" % theli_folder)
         gui_folder = os.path.join(theli_folder, "gui")
         if not os.path.exists(gui_folder):
             print("THELI GUI installation not found")

@@ -103,6 +103,7 @@ class Reduction(object):
         self.params.set(main_params)
         # empty temp folder
         remove_temp_files()
+        self.ignore_weight_timestamp = ignore_weight_timestamp
         # determine verbosity level
         self.verbosity = 1
         if verbosity in ("quiet", "normal", "full"):

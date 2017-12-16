@@ -11,7 +11,7 @@ import textwrap
 from copy import copy
 from math import ceil
 
-from system.base import INSTRUMENTS
+from system.base import INSTRUMENTS, ascii_styled
 from system.instruments import Instrument
 from system.version import __version_theli__, __version_gui__, __version__
 from .commandlist import *  # command line parameter data base
@@ -442,14 +442,15 @@ class ActionVersion(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         pad = 17
-        versionstr = "{:{pad}}{:}\n".format(
-            "THELI:", __version_theli__, pad=pad)
+        versionstr = ""
         versionstr += "{:{pad}}{:}\n".format(
-            "GUI scripts:", __version_gui__, pad=pad)
-        versionstr += "-" * 25 + "\n"
-        versionstr += "{:{pad}}{:}".format(
-            os.path.basename(__file__), __version__, pad=pad)
-        print(versionstr)
+            "THELI", __version_theli__, pad=pad)
+        versionstr += "{:{pad}}{:}\n".format(
+            "GUI scripts", __version_gui__, pad=pad)
+        versionstr += ascii_styled("#" * 30 + "\n", "bb-")
+        versionstr += ascii_styled(
+            "{:{pad}}{:}".format("TheliWrapper", __version__, pad=pad), "b--")
+        print("\n" + versionstr + "\n")
         sys.exit(0)
 
 
