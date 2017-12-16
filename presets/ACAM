@@ -1,7 +1,0 @@
-bg-detect-thresh          1
-bg-detect-mask-expand     2
-ref-cat-maglim            23
-sxt-detect-thresh         1.5
-scp-posangle-maxerr       180
-sky-detect-thresh         1
-sky-detect-mask-expand    3
