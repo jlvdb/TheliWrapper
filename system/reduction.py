@@ -102,7 +102,6 @@ class Reduction(object):
         self.params.set(main_params)
         # empty temp folder
         remove_temp_files()
-        self.ignore_weight_timestamp = ignore_weight_timestamp
         # determine verbosity level
         self.verbosity = 1
         if verbosity in ("quiet", "normal", "full"):
@@ -824,7 +823,17 @@ class Reduction(object):
                 code = Scripts.process_background_para(
                     self.maindir, seq.path, skydir,
                     env=self.theli_env, verb=self.verbosity)
+                # check if background modelling failed
+                if folder.contains("NOSKYCORR"):
+                    noskycorr = True
+                    folder.lift_content("NOSKYCORR")
+                    folder.delete("BACKGROUND")
+                    folder.delete("MASK_IMAGES")
+                    folder.delete("OFC_IMAGES")
                 self.check_return_code(code)
+                if noskycorr:
+                    self.display_error(
+                        "Background modelling failed - revert changes")
         self.display_separator()
 
     def merge_sequence(self, params={}):
