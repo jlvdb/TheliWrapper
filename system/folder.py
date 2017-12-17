@@ -309,21 +309,22 @@ class Folder(object):
         """Check if weight filess (stored in parent/WEIGHTS) exist and have a
         newer time stamp than the image files in the folder."""
         # check weight folder presence
-        weightfolder = os.path.join(os.path.split(self.abs)[0], "WEIGHTS")
+        weightfolder = os.path.join(self.parent, "WEIGHTS")
         if not os.path.exists(weightfolder):
-            return False
+            return False, False
         fitsfiles = self.fits(ignore_sub=True)
-        # select weight images and check time stamps
+        # check weight image existance and compare time stamps
+        all_present, all_newer = True, True
         for fitsfile in fitsfiles:
+            # match weight image with a fits image
             weight = os.path.join(  # expected weight name from FITS image
                 weightfolder, ".weight".join(
-                    os.path.splitext(os.path.split(fitsfile)[1])))
-            # match weight image with a fits image
+                    os.path.splitext(os.path.basename(fitsfile))))
             if not os.path.exists(weight):
-                return False  # no weight file exists for this image
+                all_present = False  # no weight file exists for this image
             if (os.path.getctime(weight) - os.path.getctime(fitsfile)) < 0:
-                return False  # this file is outdated
-        return True  # test passed
+                all_newer = False  # this file is outdated
+        return all_present, all_newer  # test passed
 
     def count_groups(self):
         """Count the groups produced by sequence splitting."""

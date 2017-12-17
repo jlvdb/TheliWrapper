@@ -1202,9 +1202,9 @@ class Reduction(object):
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
             filetags = folder.tags(ignore_sub=True)
-            found_output_files = folder.check_weight()
+            found_output_files, timestamps_fine = folder.check_weight()
             # data verification
-            if not redo and found_output_files:
+            if not redo and found_output_files and timestamps_fine:
                 self.display_header(job_message)
                 self.display_success("weight maps found")
                 continue
@@ -1771,8 +1771,9 @@ class Reduction(object):
             filetags = folder.tags(ignore_sub=True)
             found_input_files = any(
                 folder.contains_tag(t) for t in THELI_TAGS["OFC.sub"])
-            found_weights = (
-                folder.check_weight() or self.ignore_weight_timestamp)
+            found_weights, timestamps_fine = folder.check_weight()
+            if self.ignore_weight_timestamp:
+                timestamps_fine = True
             found_headers = folder.contains("headers")
             found_output_files = folder.contains_coadds()
             # data verification
@@ -1791,8 +1792,8 @@ class Reduction(object):
                 continue
             if redo and found_output_files and not found_weights:
                 self.display_header(job_message + ID)
-                self.display_error("no weight maps found")
-                sys.exit(1)
+                self.display_warning("no weight maps found - skipping redo")
+                continue
             if redo and found_output_files and not found_headers:
                 self.display_header(job_message + ID)
                 self.display_warning(
@@ -1810,6 +1811,9 @@ class Reduction(object):
                 self.display_header(job_message + ID)
                 self.display_error("no astrometric header files found")
                 self.exit(1)
+            if not timestamps_fine:
+                self.display_header(job_message + ID)
+                self.display_warning("weight maps possibly outdated")
             # run jobs
             tag = filetags.pop()
             # read out current filter -> if not set manually
