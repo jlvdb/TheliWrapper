@@ -33,8 +33,7 @@ class Reduction(object):
             biasdir=None, darkdir=None, flatdir=None, flatoffdir=None,
             sciencedir=None, skydir=None, stddir=None,
             reduce_skydir=False, ncpus=None, verbosity="normal",
-            logdisplay="none", check_filters=True,
-            ignore_weight_timestamp=False, parseparams={}):
+            logdisplay="none", check_filters=True, parseparams={}):
         super(Reduction, self).__init__()
         # set the main folder
         self.maindir = os.path.abspath(maindir)
@@ -1772,8 +1771,6 @@ class Reduction(object):
             found_input_files = any(
                 folder.contains_tag(t) for t in THELI_TAGS["OFC.sub"])
             found_weights, timestamps_fine = folder.check_weight()
-            if self.ignore_weight_timestamp:
-                timestamps_fine = True
             found_headers = folder.contains("headers")
             found_output_files = folder.contains_coadds()
             # data verification

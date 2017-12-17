@@ -560,11 +560,6 @@ Parser = TheliParser(
     formatter_class=lambda prog: argparse.HelpFormatter(
         prog, max_help_position=28))
 
-"""
-Parser.add_argument(
-    'jobs', metavar='JOBLIST',
-    help="listing of job descriptors (see --help-jobs)")
-"""
 Parser.add_argument(
     'inst', metavar="INST",
     help="THELI instrument identification string")
@@ -634,9 +629,6 @@ optargs.add_argument(
 optargs.add_argument(
     "--disable-filter-check", action="store_false",
     help="Disable the instrument filter check and comparison")
-optargs.add_argument(
-    "--ignore-weight-timestamp", action="store_true",
-    help="Disable checking if weight images are up to date with exposures")
 optargs.add_argument(
     "--verbosity", "-v", type=str, default="normal",
     choices=("quiet", "normal", "full"))
