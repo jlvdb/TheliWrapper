@@ -11,170 +11,196 @@ Defines a data base of command line parameters for argparse.ArgumentParser
 #        without leading -- and - replaced by _)
 # help: help to print on screen
 parse_actions = {
-    "Fr": {
-        "name": "Sort data using FITS key",
-        "func": "sort_data_using_FITS_key",
-        "para": [],
-        "help": "Sorts data based on the identifier "
-                "given in this FITS keyword"},
+    # "Fr": {
+    #     "ordr": 1,
+    #     "name": "Sort data using FITS key",
+    #     "func": "sort_data_using_FITS_key",
+    #     "para": [],
+    #     "help": "Sorts data based on the identifier "
+    #             "given in this FITS keyword"},
     "Fs": {
+        "ordr": 2,
         "name": "Split FITS / correct header",
         "func": "split_FITS_correct_header",
         "para": [],
         "help": "Splits multi-extension FITS files, and "
                 "writes the THELI standard FITS header"},
-    "Lc": {
-        "name": "Create links",
-        "func": "create_links",
-        "para": ['links_chips', 'links_scratch_dir'],
-        "help": "Distributes the data over several hard disks"},
+    # "Lc": {
+    #     "ordr": 3,
+    #     "name": "Create links",
+    #     "func": "create_links",
+    #     "para": ['links_chips', 'links_scratch_dir'],
+    #     "help": "Distributes the data over several hard disks"},
     "Cb": {
+        "ordr": 4,
         "name": "Process biases",
         "func": "process_biases",
         "para": ['cal_bias_mode_min', 'cal_bias_mode_max'],
         "help": "Creates a master bias from a series of bias exposures"},
     "Cd": {
+        "ordr": 5,
         "name": "Process draks",
         "func": "process_darks",
         "para": ['cal_dark_mode_min', 'cal_dark_mode_max'],
         "help": "Creates a master dark from a series of dark exposures"},
     "Cf": {
+        "ordr": 6,
         "name": "Process flats",
         "func": "process_flats",
         "para": ['cal_flat_mode_min', 'cal_flat_mode_max'],
         "help": "Creates a master flat from a series of flat field exposures"},
     "Cs": {
+        "ordr": 7,
         "name": "Calibrate data",
         "func": "calibrate_data",
         "para": ['use_dark', 'cal_data_mode_min', 'cal_data_mode_max'],
         "help": "Applies the master bias and master flat to the data"},
-    "Gs": {
-        "name": "Spread sequence (NIR)",
-        "func": "spread_sequence",
-        "para": ['nir_ngroups', 'nir_grouplen'],
-        "help": "Spreads a sequence of IR exposures in a certain way"},
+    # "Gs": {
+    #     "ordr": 8,
+    #     "name": "Spread sequence (NIR)",
+    #     "func": "spread_sequence",
+    #     "para": ['nir_ngroups', 'nir_grouplen'],
+    #     "help": "Spreads a sequence of IR exposures in a certain way"},
     "Bm": {
+        "ordr": 9,
         "name": "Background model correction",
         "func": "background_model_correction",
         "para": [],
         "help": "Applies a background correction (subtraction, "
                 "superflat, fringe model, NIR sky)"},
-    "Gm": {
-        "name": "Merge sequence (NIR)",
-        "func": "merge_sequence",
-        "para": [],
-        "help": "Merges  a sequence of previously spread IR exposures"},
-    "Bn": {
-        "name": "Chop/Nod sky subtraction",
-        "func": "chop_nod_skysub",
-        "para": ['chop_pattern', 'chop_pattern_invert'],
-        "help": "Does a chop-nod sky subtraction for mid-IR data"},
-    "Bc": {
-        "name": "Collapse correction",
-        "func": "collapse_correction",
-        "para": [],
-        "help": "Does a collapse correction to remove "
-                "horizontal or vertical gradients"},
+    # "Gm": {
+    #     "ordr": 10,
+    #     "name": "Merge sequence (NIR)",
+    #     "func": "merge_sequence",
+    #     "para": [],
+    #     "help": "Merges  a sequence of previously spread IR exposures"},
+    # "Bn": {
+    #     "ordr": 11,
+    #     "name": "Chop/Nod sky subtraction",
+    #     "func": "chop_nod_skysub",
+    #     "para": ['chop_pattern', 'chop_pattern_invert'],
+    #     "help": "Does a chop-nod sky subtraction for mid-IR data"},
+    # "Bc": {
+    #     "ordr": 12,
+    #     "name": "Collapse correction",
+    #     "func": "collapse_correction",
+    #     "para": [],
+    #     "help": "Does a collapse correction to remove "
+    #             "horizontal or vertical gradients"},
     "Di": {
+        "ordr": 13,
         "name": "Debloom images",
         "func": "debloom_images",
         "para": [],
         "help": "Removes blooming spikes in the images (for "
                 "the preparation of colour pictures)"},
     "Vb": {
+        "ordr": 14,
         "name": "Create binned preview",
         "func": "create_binned_preview",
         "para": [],
         "help": "Creates a binned overview image for each exposure "
                 "of a multi-chip camera, and a TIFF image."},
     "Wg": {
+        "ordr": 15,
         "name": "Create global weights",
         "func": "create_global_weights",
         "para": [],
         "help": "Creates the basic weight map for "
                 "the individual weight images"},
     "Wc": {
+        "ordr": 16,
         "name": "Create weights",
         "func": "create_weights",
         "para": [],
         "help": "Creates the individual weight maps for each image"},
-    "Ds": {
-        "name": "Distribute target sets",
-        "func": "distribute_target_sets",
-        "para": ['image_min_overlap'],
-        "help": "Identifies image associations on the sky. The SCIENCE "
-                "directory field in the Initialise section will then "
-                "point to the first association found, SCIENCE_set_1."},
+    # "Ds": {
+    #     "ordr": 17,
+    #     "name": "Distribute target sets",
+    #     "func": "distribute_target_sets",
+    #     "para": ['image_min_overlap'],
+    #     "help": "Identifies image associations on the sky. The SCIENCE "
+    #             "directory field in the Initialise section will then "
+    #             "point to the first association found, SCIENCE_set_1."},
     "Ar": {
+        "ordr": 18,
         "name": "Get reference catalogue",
         "func": "get_reference_catalog",
         "para": ['ref_cat', 'ref_cat_server', 'ref_image',
                  'ref_image_detect_thresh', 'ref_image_detect_min_area'],
         "help": "Downloads a reference catalogue from "
                 "web or creates it from an image"},
-    "Pi": {
-        "name": "Absolute photometry (indirect)",
-        "func": "absolute_photometry_indirect",
-        "para": [],
-        "help": "Attempts to derive absolute photometric "
-                "zeropoints for each exposure."},
-    "Pd": {
-        "name": "Absolute photometry (direct)",
-        "func": "absolute_photometry_direct",
-        "para": [],
-        "help": "Attempts to derive absolute photometric "
-                "zeropoints for each exposure."},
+    # "Pi": {
+    #     "ordr": 19,
+    #     "name": "Absolute photometry (indirect)",
+    #     "func": "absolute_photometry_indirect",
+    #     "para": [],
+    #     "help": "Attempts to derive absolute photometric "
+    #             "zeropoints for each exposure."},
+    # "Pd": {
+    #     "ordr": 20,
+    #     "name": "Absolute photometry (direct)",
+    #     "func": "absolute_photometry_direct",
+    #     "para": [],
+    #     "help": "Attempts to derive absolute photometric "
+    #             "zeropoints for each exposure."},
     "As": {
+        "ordr": 21,
         "name": "Create source catalogue",
         "func": "create_source_cat",
         "para": [],
         "help": "Creates a source catalogue for each image "
                 "for later astrometry and photometry"},
     "Ac": {
+        "ordr": 22,
         "name": "Astro+photomtery",
         "func": "astro_and_photometry",
         "para": ['astrometry_method', 'ignore_scamp_segfault'],
         "help": "Calculates astrometric and photometric solutions"},
-    "Hu": {
-        "name": "Update header",
-        "func": "astrometry_update_header",
-        "para": [],
-        "help": "Writes the zero-order astrometric solution (CRVAL, "
-                "CRPIX, CD-matrix) into the FITS headers"},
-    "Hr": {
-        "name": "Restore header",
-        "func": "astrometry_restore_header",
-        "para": [],
-        "help": "Restores the original (raw data) zero-order astrometric "
-                "information in the header (undo \"update header\")"},
-    "Sh": {
-        "name": "Sky subtraction helper",
-        "func": "sky_subtraction_helper",
-        "para": [],
-        "help": "Prepares a constant sky model subtraction"},
+    # "Hu": {
+    #     "ordr": 23,
+    #     "name": "Update header",
+    #     "func": "astrometry_update_header",
+    #     "para": [],
+    #     "help": "Writes the zero-order astrometric solution (CRVAL, "
+    #             "CRPIX, CD-matrix) into the FITS headers"},
+    # "Hr": {
+    #     "ordr": 24,
+    #     "name": "Restore header",
+    #     "func": "astrometry_restore_header",
+    #     "para": [],
+    #     "help": "Restores the original (raw data) zero-order astrometric "
+    #             "information in the header (undo \"update header\")"},
+    # "Sh": {
+    #     "ordr": 25,
+    #     "name": "Sky subtraction helper",
+    #     "func": "sky_subtraction_helper",
+    #     "para": [],
+    #     "help": "Prepares a constant sky model subtraction"},
     "Ss": {
+        "ordr": 26,
         "name": "Sky subtraction",
         "func": "sky_subtraction",
         "para": ['sky_model_const'],
         "help": "Subtracts the sky from the images"},
     "Ca": {
+        "ordr": 27,
         "name": "Coaddition",
         "func": "coaddition",
         "para": ['cd_posangle_from_image'],
         "help": "Coadds the data"},
-    "Lr": {
-        "name": "Resolve links",
-        "func": "resolve_links",
-        "para": [],
-        "help": "Recollects the data spread over several "
-                "hard disks in the beginning (Lc)"}
+    # "Lr": {
+    #     "ordr": 28,
+    #     "name": "Resolve links",
+    #     "func": "resolve_links",
+    #     "para": [],
+    #     "help": "Recollects the data spread over several "
+    #             "hard disks in the beginning (Lc)"}
 }
 # order in which the jobs will be listed in help
-parse_actions_ordered = [
-    "Fr", "Fs", "Lc", "Cb", "Cd", "Cf", "Cs", "Gs", "Bm",
-    "Gm", "Bn", "Bc", "Di", "Vb", "Wg", "Wc", "Ds", "Ar",
-    "Pi", "Pd", "As", "Ac", "Hu", "Hr", "Sh", "Ss", "Ca", "Lr"]
-
+parse_actions_ordered = []
+for job, jobdict in sorted(parse_actions.items(), key=lambda x: x[1]["ordr"]):
+    parse_actions_ordered.append(job)
 
 # not yet implemented parameters
 """
