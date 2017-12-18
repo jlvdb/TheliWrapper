@@ -321,7 +321,7 @@ class Folder(object):
                 weightfolder, ".weight".join(
                     os.path.splitext(os.path.basename(fitsfile))))
             if not os.path.exists(weight):
-                all_present = False  # no weight file exists for this image
+                return False, False
             if (os.path.getctime(weight) - os.path.getctime(fitsfile)) < 0:
                 all_newer = False  # this file is outdated
         return all_present, all_newer  # test passed
