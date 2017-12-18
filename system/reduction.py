@@ -33,8 +33,9 @@ class Reduction(object):
             biasdir=None, darkdir=None, flatdir=None, flatoffdir=None,
             sciencedir=None, skydir=None, stddir=None,
             reduce_skydir=False, ncpus=None, verbosity="normal",
-            logdisplay="none", check_filters=True, parseparams={}):
+            logdisplay="none", check_filters=True, redo=False, parseparams={}):
         super(Reduction, self).__init__()
+        self.redo = redo
         # set the main folder
         self.maindir = os.path.abspath(maindir)
         if not os.path.isdir(maindir):
@@ -68,10 +69,12 @@ class Reduction(object):
                     "%s: not found: %s" % (name, abspath))
                 sys.exit(1)
             # test folder contains files
-            if not len(os.listdir(abspath)) > 0:
+            if len(tuple(
+                    f for f in os.listdir(abspath)
+                    if os.path.isfile(os.path.join(abspath, f)))) == 0:
                 print(self)
                 self.display_error(
-                    "%s: is empty: %s" % (name, abspath))
+                    "%s: contains no files: %s" % (name, abspath))
                 sys.exit(1)
             # register a Folder instance
             setattr(self, folder, Folder(abspath))
@@ -317,7 +320,7 @@ class Reduction(object):
         self.check_return_code(code)
         self.display_separator()
 
-    def split_FITS_correct_header(self, redo=False, params={}):
+    def split_FITS_correct_header(self, params={}):
         self.params.set(params)
         correct_xtalk = (
             self.params.get("V_PRE_XTALK_NOR_CHECKED") != '0' or
@@ -333,7 +336,7 @@ class Reduction(object):
             folder = getattr(self, foldervar)
             if folder is None:
                 continue
-            if redo:
+            if self.redo:
                 folder.restore()
             filetags = folder.tags(ignore_sub=True)
             found_original_files = folder.contains_tag('none')
@@ -370,6 +373,7 @@ class Reduction(object):
                 raise NotImplementedError(
                     "Cross talk correction not implented yet")
         self.display_separator()
+        self.redo = False
 
     def create_links(self, chip, target, params={}):
         self.params.set(params)
@@ -402,8 +406,7 @@ class Reduction(object):
             self.check_return_code(code)
         self.display_separator()
 
-    def process_biases(
-            self, minmode=None, maxmode=None, redo=False, params={}):
+    def process_biases(self, minmode=None, maxmode=None, params={}):
         self.params.set(params)
         job_message = "Processsing BIASes"
         # folder verification
@@ -411,7 +414,7 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("bias folder not specified")
             sys.exit(1)
-        if redo:
+        if self.redo:
             self.biasdir.delete_master()
         filetags = self.biasdir.tags(ignore_sub=True)
         found_split_files = self.biasdir.contains_tag('')
@@ -422,7 +425,7 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("found multiple progress stages")
             sys.exit(1)
-        if not redo and found_masterbias:
+        if not self.redo and found_masterbias:
             self.display_header(job_message)
             self.display_success("master bias found")
             self.display_separator()
@@ -452,7 +455,7 @@ class Reduction(object):
         self.check_return_code(code)
         self.display_separator()
 
-    def process_darks(self, minmode=None, maxmode=None, redo=False, params={}):
+    def process_darks(self, minmode=None, maxmode=None, params={}):
         self.params.set(params)
         job_message = "Processsing DARKs"
         # folder verification
@@ -460,7 +463,7 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("dark folder not specified")
             sys.exit(1)
-        if redo:
+        if self.redo:
             self.darkdir.delete_master()
         filetags = self.darkdir.tags(ignore_sub=True)
         found_split_files = self.darkdir.contains_tag('')
@@ -471,7 +474,7 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("found multiple progress stages")
             sys.exit(1)
-        if not redo and found_masterdark:
+        if not self.redo and found_masterdark:
             self.display_header(job_message)
             self.display_success("master dark found")
             self.display_separator()
@@ -501,7 +504,7 @@ class Reduction(object):
         self.check_return_code(code)
         self.display_separator()
 
-    def process_flats(self, minmode=None, maxmode=None, redo=False, params={}):
+    def process_flats(self, minmode=None, maxmode=None, params={}):
         self.params.set(params)
         # folder verification
         job_message = "Processsing FLATs"
@@ -531,7 +534,7 @@ class Reduction(object):
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
             filetags = folder.tags(ignore_sub=True)
-            if redo:
+            if self.redo:
                 folder.delete_master()
             found_split_files = folder.contains_tag('')
             found_masterflat = folder.contains_master()
@@ -545,7 +548,7 @@ class Reduction(object):
                 self.display_header(job_message + ID)
                 self.display_error("found multiple progress stages")
                 sys.exit(1)
-            if not redo and found_masterflat:
+            if not self.redo and found_masterflat:
                 self.display_header(job_message + ID)
                 self.display_success("master flat found")
                 continue
@@ -597,8 +600,7 @@ class Reduction(object):
         self.display_separator()
 
     def calibrate_data(
-            self, usedark=False, minmode=None, maxmode=None, redo=False,
-            params={}):
+            self, usedark=False, minmode=None, maxmode=None, params={}):
         self.params.set(params)
         # folder verification
         job_message = "Calibrating data"
@@ -641,7 +643,7 @@ class Reduction(object):
         if len(IDs) > 1:
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
-            if redo:
+            if self.redo:
                 folder.delete("*FC*")
                 folder.lift_content("SPLIT_IMAGES")
             filetags = folder.tags(ignore_sub=True)
@@ -662,7 +664,7 @@ class Reduction(object):
                 self.display_error("no split images found")
                 sys.exit(1)
             # run jobs
-            if redo:
+            if self.redo:
                 folder.move_tag("OF*", "OFC_IMAGES", ignore_sub=True)
                 folder.lift_content("SPLIT_IMAGES")
             if ID == "" and (minmode is not None and maxmode is not None):
@@ -738,7 +740,7 @@ class Reduction(object):
             self.check_return_code(code)
         self.display_separator()
 
-    def background_model_correction(self, redo=False, params={}):
+    def background_model_correction(self, params={}):
         self.params.set(params)
         # folder verification
         job_message = "Background modeling"
@@ -768,7 +770,7 @@ class Reduction(object):
                 ID = " (science)" if ID == "" and len(sequence) > 1 else ""
                 if len(sequence) > 1:
                     ID = " (%s %d)" % (ID[2:-1], n)
-                if redo:
+                if self.redo:
                     folder.delete("*FCB*")
                     folder.delete("BACKGROUND")
                     folder.delete("MASK_IMAGES")
@@ -786,12 +788,13 @@ class Reduction(object):
                     self.display_header(job_message + ID)
                     self.display_error("found multiple progress stages")
                     sys.exit(1)
-                if not redo and (found_output_files or found_output_folder):
+                if not self.redo and (
+                        found_output_files or found_output_folder):
                     self.display_header(job_message + ID)
                     self.display_success("OFCB images found")
                     continue
-                if redo and (found_output_files or found_output_folder) and \
-                        not found_input_files:
+                if self.redo and (found_output_files or found_output_folder) \
+                        and not found_input_files:
                     self.display_header(job_message + ID)
                     self.display_warning("no OFC images found - skipping redo")
                     continue
@@ -806,39 +809,49 @@ class Reduction(object):
                     continue
                 # run jobs
                 tag = filetags.pop()
-                if redo:
+                if self.redo:
                     seq.move_tag(tag, tag + "_IMAGES", ignore_sub=True)
                     for foldertag in THELI_TAGS["OFCB"]:
                         if seq.contains(foldertag + "_IMAGES"):
                             seq.lift_content("")
                             break
-                if ID == "" and apply_bright_star_filter:
-                    # optional: remove chips with bright stars
-                    self.display_header("Identifying chips with bright stars")
-                    use_folder = (self.skydir.path if apply_skydir
-                                  else self.sciencedir.path)
-                    code = Scripts.id_bright_objects(
-                        self.maindir, use_folder, tag,
+                try:
+                    folder.freeze()
+                    if ID == "" and apply_bright_star_filter:
+                        # optional: remove chips with bright stars
+                        self.display_header(
+                            "Identifying chips with bright stars")
+                        use_folder = (
+                            self.skydir.path if apply_skydir
+                            else self.sciencedir.path)
+                        code = Scripts.id_bright_objects(
+                            self.maindir, use_folder, tag,
+                            env=self.theli_env, verb=self.verbosity)
+                        self.return_code_check(code)
+                    # create background model
+                    self.display_header(job_message + ID)
+                    skydir = (
+                        self.skydir.path
+                        if apply_skydir and ID == ""
+                        else "noskydir")
+                    code = Scripts.process_background_para(
+                        self.maindir, seq.path, skydir,
                         env=self.theli_env, verb=self.verbosity)
-                    self.return_code_check(code)
-                # create background model
-                self.display_header(job_message + ID)
-                skydir = (self.skydir.path
-                          if apply_skydir and ID == ""
-                          else "noskydir")
-                code = Scripts.process_background_para(
-                    self.maindir, seq.path, skydir,
-                    env=self.theli_env, verb=self.verbosity)
-                # check if background modelling failed
-                if folder.contains("NOSKYCORR"):
-                    folder.lift_content("NOSKYCORR")
-                    folder.delete("BACKGROUND")
-                    folder.delete("MASK_IMAGES")
-                    folder.delete("OFC_IMAGES")
-                    self.display_error(
-                        "Background modelling failed - revert changes.\n" +
-                        "Shortening the root folder path may solve this")
-                self.check_return_code(code)
+                    # check if background modelling failed
+                    if folder.contains("NOSKYCORR"):
+                        folder.lift_content("NOSKYCORR")
+                        folder.delete("BACKGROUND")
+                        folder.delete("MASK_IMAGES")
+                        folder.delete("OFC_IMAGES")
+                        self.display_error(
+                            "Background modelling failed - revert changes.\n" +
+                            "Shortening the root folder path may solve this")
+                    self.check_return_code(code)
+                except KeyboardInterrupt:
+                    folder.restore_state()
+                    raise
+                finally:
+                    folder.unfreeze()
         self.display_separator()
 
     def merge_sequence(self, params={}):
@@ -886,8 +899,7 @@ class Reduction(object):
             self.check_return_code(code)
         self.display_separator()
 
-    def chop_nod_skysub(
-            self, pattern="0110", revert=False, redo=False, params={}):
+    def chop_nod_skysub(self, pattern="0110", revert=False, params={}):
         self.params.set(params)
         job_message = "Subtracting sky by chop-nod"
         if self.instrument.TYPE != "MIR":
@@ -913,7 +925,7 @@ class Reduction(object):
         if len(IDs) > 1:
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
-            if redo:
+            if self.redo:
                 folder.delete("*F*H*")
                 for tag in THELI_TAGS["OFCH"]:
                     if folder.contains("%s_IMAGES" % tag):
@@ -931,11 +943,11 @@ class Reduction(object):
                 self.display_header(job_message + ID)
                 self.display_error("found multiple progress stages")
                 sys.exit(1)
-            if not redo and (found_output_files or found_output_folder):
+            if not self.redo and (found_output_files or found_output_folder):
                 self.display_header(job_message + ID)
                 self.display_success("OFC(B)H images found")
                 continue
-            if redo and (found_output_files or found_output_folder) and \
+            if self.redo and (found_output_files or found_output_folder) and \
                     not found_input_files:
                 self.display_header(job_message + ID)
                 self.display_warning(
@@ -957,13 +969,20 @@ class Reduction(object):
             self.display_header(job_message + ID)
             if pattern not in ("0110", "1001", "0101", "1010"):
                 self.display_error("invalid chop-nod pattern:", pattern)
-            code = Scripts.process_science_chopnod_para(
-                self.maindir, folder.path, tag, pattern, revert,
-                env=self.theli_env, verb=self.verbosity)
-            self.check_return_code(code)
+            try:
+                folder.freeze()
+                code = Scripts.process_science_chopnod_para(
+                    self.maindir, folder.path, tag, pattern, revert,
+                    env=self.theli_env, verb=self.verbosity)
+                self.check_return_code(code)
+            except KeyboardInterrupt:
+                folder.restore_state()
+                raise
+            finally:
+                folder.unfreeze()
         self.display_separator()
 
-    def collapse_correction(self, redo=False, params={}):
+    def collapse_correction(self, params={}):
         self.params.set(params)
         job_message = "Collapse correction"
         # queue data folders
@@ -983,7 +1002,7 @@ class Reduction(object):
         if len(IDs) > 1:
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
-            if redo:
+            if self.redo:
                 folder.delete("*FC*C*")
                 for tag in THELI_TAGS["OFCC"]:
                     if folder.contains("%s_IMAGES" % tag):
@@ -1001,11 +1020,11 @@ class Reduction(object):
                 self.display_header(job_message + ID)
                 self.display_error("found multiple progress stages")
                 sys.exit(1)
-            if not redo and (found_output_files or found_output_folder):
+            if not self.redo and (found_output_files or found_output_folder):
                 self.display_header(job_message + ID)
                 self.display_success("OFC(BH)C images found")
                 continue
-            if redo and (found_output_files or found_output_folder) and \
+            if self.redo and (found_output_files or found_output_folder) and \
                     not found_input_files:
                 self.display_header(job_message + ID)
                 self.display_warning(
@@ -1017,7 +1036,7 @@ class Reduction(object):
                 sys.exit(1)
             # run jobs
             tag = filetags.pop()
-            if redo:
+            if self.redo:
                 folder.move_tag(tag, tag + "_IMAGES", ignore_sub=True)
                 for foldertag in THELI_TAGS["OFCC"]:
                     if folder.contains(foldertag + "_IMAGES"):
@@ -1025,13 +1044,20 @@ class Reduction(object):
                         break
             # create background model
             self.display_header(job_message + ID)
-            code = Scripts.process_collapsecorr_para(
-                self.maindir, folder.path, tag,
-                env=self.theli_env, verb=self.verbosity)
-            self.check_return_code(code)
+            try:
+                folder.freeze()
+                code = Scripts.process_collapsecorr_para(
+                    self.maindir, folder.path, tag,
+                    env=self.theli_env, verb=self.verbosity)
+                self.check_return_code(code)
+            except KeyboardInterrupt:
+                folder.restore_state()
+                raise
+            finally:
+                folder.unfreeze()
         self.display_separator()
 
-    def debloom_images(self, saturation=55000, redo=False, params={}):
+    def debloom_images(self, saturation=55000, params={}):
         self.params.set(params)
         job_message = "Deblooming images"
         if self.instrument.TYPE != "OPT":
@@ -1057,7 +1083,7 @@ class Reduction(object):
         if len(IDs) > 1:
             IDs[0] = " (science)"
         for folder, ID in zip(folders, IDs):
-            if redo:
+            if self.redo:
                 folder.delete("*FC*D*")
                 for tag in THELI_TAGS["OFCD"]:
                     if folder.contains("%s_IMAGES" % tag):
@@ -1075,11 +1101,11 @@ class Reduction(object):
                 self.display_header(job_message + ID)
                 self.display_error("found multiple progress stages")
                 sys.exit(1)
-            if not redo and (found_output_files or found_output_folder):
+            if not self.redo and (found_output_files or found_output_folder):
                 self.display_header(job_message + ID)
                 self.display_success("OFC(BHC)D images found")
                 continue
-            if redo and (found_output_files or found_output_folder) and \
+            if self.redo and (found_output_files or found_output_folder) and \
                     not found_input_files:
                 self.display_header(job_message + ID)
                 self.display_warning(
@@ -1091,7 +1117,7 @@ class Reduction(object):
                 sys.exit(1)
             # run jobs
             tag = filetags.pop()
-            if redo:
+            if self.redo:
                 folder.move_tag(tag, tag + "_IMAGES", ignore_sub=True)
                 for foldertag in THELI_TAGS["OFCD"]:
                     if folder.contains(foldertag + "_IMAGES"):
@@ -1099,13 +1125,20 @@ class Reduction(object):
                         break
             # debloom imags
             self.display_header(job_message + ID)
-            code = Scripts.create_debloomedimages_para(
-                self.maindir, folder.path, tag, saturation,
-                env=self.theli_env, verb=self.verbosity)
-            self.check_return_code(code)
+            try:
+                folder.freeze()
+                code = Scripts.create_debloomedimages_para(
+                    self.maindir, folder.path, tag, saturation,
+                    env=self.theli_env, verb=self.verbosity)
+                self.check_return_code(code)
+            except KeyboardInterrupt:
+                folder.restore_state()
+                raise
+            finally:
+                folder.unfreeze()
         self.display_separator()
 
-    def create_binned_preview(self, redo=False, params={}):
+    def create_binned_preview(self, params={}):
         self.params.set(params)
         job_message = "Creating tiff preview"
         # queue data folders (optinal: have standard-dir)
@@ -1132,31 +1165,39 @@ class Reduction(object):
                 self.display_header(job_message + ID)
                 self.display_error("no images found")
                 sys.exit(1)
-            if not redo and found_output_files:
+            if not self.redo and found_output_files:
                 self.display_header(job_message + ID)
                 self.display_success("preview images found")
                 continue
             for tag in filetags:
                 # run jobs
-                if redo:
+                if self.redo:
                     folder.delete("BINNED_FITS")
                     folder.delete("BINNED_TIFF")
                 tagID = " [%s]" % tag if len(filetags) > 1 else ""
-                if self.nchips > 1:
-                    # from multichip cameras: create fits preview
-                    self.display_header("Creating fits preview" + ID + tagID)
-                    code = Scripts.make_album(
-                        self.instrument.NAME, self.maindir, folder.path, tag,
+                try:
+                    folder.freeze()
+                    if self.nchips > 1:
+                        # from multichip cameras: create fits preview
+                        self.display_header(
+                            "Creating fits preview" + ID + tagID)
+                        code = Scripts.make_album(
+                            self.instrument.NAME, self.maindir, folder.path,
+                            tag, env=self.theli_env, verb=self.verbosity)
+                        self.check_return_code(code)
+                    self.display_header(job_message + ID + tagID)
+                    code = Scripts.create_tiff(
+                        self.maindir, folder.path, tag,
                         env=self.theli_env, verb=self.verbosity)
                     self.check_return_code(code)
-                self.display_header(job_message + ID + tagID)
-                code = Scripts.create_tiff(
-                    self.maindir, folder.path, tag,
-                    env=self.theli_env, verb=self.verbosity)
-                self.check_return_code(code)
+                except KeyboardInterrupt:
+                    folder.restore_state()
+                    raise
+                finally:
+                    folder.unfreeze()
         self.display_separator()
 
-    def create_global_weights(self, redo=False, params={}):
+    def create_global_weights(self, params={}):
         self.params.set(params)
         # folder verification
         job_message = "Creating global WEIGHTs"
@@ -1180,7 +1221,7 @@ class Reduction(object):
         # reduction steps are not done all at once
         found_output_files = False  # self.sciencedir.check_global_weight()
         # data verification
-        if not redo and found_output_files:
+        if not self.redo and found_output_files:
             self.display_header(job_message)
             self.display_success("global weight maps found")
             self.display_separator()
@@ -1194,7 +1235,7 @@ class Reduction(object):
         self.check_return_code(code)
         self.display_separator()
 
-    def create_weights(self, redo=False, params={}):
+    def create_weights(self, params={}):
         self.params.set(params)
         job_message = "Creating WEIGHTs"
         # queue data folders
@@ -1217,7 +1258,7 @@ class Reduction(object):
             filetags = folder.tags(ignore_sub=True)
             found_output_files, timestamps_fine = folder.check_weight()
             # data verification
-            if not redo and found_output_files and timestamps_fine:
+            if not self.redo and found_output_files and timestamps_fine:
                 self.display_header(job_message)
                 self.display_success("weight maps found")
                 continue
@@ -1236,7 +1277,7 @@ class Reduction(object):
                 self.check_return_code(code)
         self.display_separator()
 
-    def distribute_target_sets(self, minoverlap, redo=False, params={}):
+    def distribute_target_sets(self, minoverlap, params={}):
         self.params.set(params)
         job_message = "Separating different target fields"
         # queue data folders
@@ -1276,7 +1317,7 @@ class Reduction(object):
 
     def get_reference_catalog(
             self, refcat="SDSS-DR9", server="vizier.u-strasbg.fr",
-            imagepath=None, dt=-1, dmin=-1, redo=False, params={}):
+            imagepath=None, dt=-1, dmin=-1, params={}):
         self.params.set(params)
         job_message = "Creating astrometric reference catalog"
         if self.sciencedir is None:
@@ -1290,7 +1331,7 @@ class Reduction(object):
             self.display_header(job_message)
             self.display_error("found multiple progress stages")
             sys.exit(1)
-        if not redo and found_refcat:
+        if not self.redo and found_refcat:
             self.display_header(job_message)
             self.display_success("reference catalogue found")
             self.display_separator()
@@ -1329,10 +1370,17 @@ class Reduction(object):
                 self.display_warning(
                     "parameters " + ", ".join(message) +
                     " not set, use defaults")
-            code = Scripts.create_astrorefcat_fromIMAGE(
-                imagepath, dt, dmin, self.sciencedir.abs,
-                env=self.theli_env, verb=self.verbosity)
-            self.check_return_code(code)
+            try:
+                self.sciencedir.freeze()
+                code = Scripts.create_astrorefcat_fromIMAGE(
+                    imagepath, dt, dmin, self.sciencedir.abs,
+                    env=self.theli_env, verb=self.verbosity)
+                self.check_return_code(code)
+            except KeyboardInterrupt:
+                self.sciencedir.restore_state()
+                raise
+            finally:
+                self.sciencedir.unfreeze()
         # web reference
         else:
             job_message = job_message + " (web)"
@@ -1364,32 +1412,39 @@ class Reduction(object):
                 self.display_warning(
                     "imagepath, dt, dmin have no effect on web catalog")
             # 10 retries (with increasing waiting interval) if not connecting
-            for i in range(11):
-                code = Scripts.create_astrorefcat_fromWEB(
-                    self.maindir, self.sciencedir.path, tag, refcat, server,
-                    env=self.theli_env, verb=self.verbosity)
-                # handle connection error
-                if "Temporary failure in name resolution" in code[0][1]:
-                    if i == 0:
-                        sys.stdout.write(ascii_styled("WARNING: ", "-y-"))
-                        sys.stdout.write("retry connecting to server ")
-                        sys.stdout.flush()
-                    elif i == 10:
-                        print()
-                        self.display_error(
-                            "connecting to '%s' failed " % server +
-                            "after 10 retries")
-                        sys.exit(1)
+            try:
+                self.sciencedir.freeze()
+                for i in range(11):
+                    code = Scripts.create_astrorefcat_fromWEB(
+                        self.maindir, self.sciencedir.path, tag, refcat,
+                        server, env=self.theli_env, verb=self.verbosity)
+                    # handle connection error
+                    if "Temporary failure in name resolution" in code[0][1]:
+                        if i == 0:
+                            sys.stdout.write(ascii_styled("WARNING: ", "-y-"))
+                            sys.stdout.write("retry connecting to server ")
+                            sys.stdout.flush()
+                        elif i == 10:
+                            print()
+                            self.display_error(
+                                "connecting to '%s' failed " % server +
+                                "after 10 retries")
+                            sys.exit(1)
+                        else:
+                            sys.stdout.write(".")
+                            sys.stdout.flush()
+                        # wait before reconnecting
+                        sleep(5 + 50 * (i / 10))
                     else:
-                        sys.stdout.write(".")
-                        sys.stdout.flush()
-                    # wait before reconnecting
-                    sleep(5 + 50 * (i / 10))
-                else:
-                    if i > 0:
-                        print()
-                    break
-            self.check_return_code(code)
+                        if i > 0:
+                            print()
+                        break
+                self.check_return_code(code)
+            except KeyboardInterrupt:
+                self.sciencedir.restore_state()
+                raise
+            finally:
+                self.sciencedir.unfreeze()
         # if reference catalogue does not cover the imaging area, no file
         # is created or the existing file does not change -> check time stemp
         if refcat_timestamp is not None:
@@ -1415,7 +1470,7 @@ class Reduction(object):
             sys.exit(1)
         self.display_separator()
 
-    def absolute_photometry_indirect(self, redo=False, params={}):
+    def absolute_photometry_indirect(self, params={}):
         """
         # does not care for astrometry method
 
@@ -1449,7 +1504,7 @@ class Reduction(object):
         self.params.set(params)
         raise NotImplementedError()
 
-    def absolute_photometry_direct(self, redo=False, params={}):
+    def absolute_photometry_direct(self, params={}):
         """
         # does not care for astrometry method
 
@@ -1495,14 +1550,14 @@ class Reduction(object):
         """
         self.params.set(params)
         raise NotImplementedError()
-        if redo:
+        if self.redo:
             folder.delete("*FC*P*")
             for tag in THELI_TAGS["OFCP"]:
                 if folder.contains("%s_IMAGES" % tag):
                     folder.lift_content("%s_IMAGES" % tag)
                     break
 
-    def create_source_cat(self, redo=False, params={}):
+    def create_source_cat(self, params={}):
         """
         # THIS IS A PROBLEM FOR SKY AND STANDARD (different pointing)
         # use in create_source_cat, if refRA/DEC not "from header"
@@ -1533,7 +1588,7 @@ class Reduction(object):
                 self.display_header(job_message + ID)
                 self.display_error("found multiple progress stages")
                 sys.exit(1)
-            if not redo and found_cat:
+            if not self.redo and found_cat:
                 self.display_header(job_message + ID)
                 self.display_success("image catalogues found")
                 continue
@@ -1541,17 +1596,24 @@ class Reduction(object):
             for tag in filetags:
                 tagID = " [%s]" % tag if len(filetags) > 1 else ""
                 self.display_header(job_message + ID + tagID)
-                code = Scripts.create_astromcats_para(
-                    self.maindir, self.sciencedir.path, tag,
-                    env=self.theli_env, verb=self.verbosity)
-                self.check_return_code(code)
-                if self.nchips > 1:
-                    self.display_header(
-                        "Merging multi-chip object catalogs" + ID + tagID)
-                    code = Scripts.create_scampcats(
+                try:
+                    folder.freeze()
+                    code = Scripts.create_astromcats_para(
                         self.maindir, self.sciencedir.path, tag,
                         env=self.theli_env, verb=self.verbosity)
                     self.check_return_code(code)
+                    if self.nchips > 1:
+                        self.display_header(
+                            "Merging multi-chip object catalogs" + ID + tagID)
+                        code = Scripts.create_scampcats(
+                            self.maindir, self.sciencedir.path, tag,
+                            env=self.theli_env, verb=self.verbosity)
+                        self.check_return_code(code)
+                except KeyboardInterrupt:
+                    folder.restore_state()
+                    raise
+                finally:
+                    folder.unfreeze()
             # count average detections per exposure / mosaic
             catpath = os.path.join(folder.abs, "cat", "ds9cat")
             exposures = {}  # make list of chip belongig to exposure
@@ -1580,8 +1642,7 @@ class Reduction(object):
         self.display_separator()
 
     def astro_and_photometry(
-            self, method="scamp", ignore_scamp_segfault=False, redo=False,
-            params={}):
+            self, method="scamp", ignore_scamp_segfault=False, params={}):
         """
         reload refcat from web if we have sky processing as well
         """
@@ -1615,63 +1676,69 @@ class Reduction(object):
                 self.display_header(job_message + ID)
                 self.display_error("found multiple progress stages")
                 sys.exit(1)
-            if not redo and found_headers:
+            if not self.redo and found_headers:
                 self.display_header(job_message + ID)
                 self.display_success("astrometric headers found")
                 continue
             # run jobs
             for tag in filetags:
                 tagID = " [%s]" % tag if len(filetags) > 1 else ""
-                if method == "scamp":
-                    self.display_header(job_message + ID + tagID)
-                    code = Scripts.create_scamp(
-                        self.maindir, self.sciencedir.path, tag, False,
-                        env=self.theli_env, verb=self.verbosity,
-                        ignoreerr=["Segmentation fault"],
-                        ignoremsg=["ignored segmentation fault in scamp"])
+                try:
+                    folder.freeze()
+                    if method == "scamp":
+                        self.display_header(job_message + ID + tagID)
+                        code = Scripts.create_scamp(
+                            self.maindir, self.sciencedir.path, tag, False,
+                            env=self.theli_env, verb=self.verbosity,
+                            ignoreerr=["Segmentation fault"],
+                            ignoremsg=["ignored segmentation fault in scamp"])
+                    elif method == "astrometry.net":
+                        self.display_header(job_message + ID + tagID)
+                        code = Scripts.create_astrometrynet(
+                            self.maindir, self.sciencedir.path, tag,
+                            env=self.theli_env, verb=self.verbosity)
+                        self.check_return_code(code)
+                        self.display_header(
+                            "Calculating photometric solution" + ID + tagID)
+                        code = Scripts.create_astrometrynet_photom(
+                            self.maindir, self.sciencedir.path, tag,
+                            env=self.theli_env, verb=self.verbosity)
+                    elif method.startswith("shift"):
+                        integer_shift = (
+                            True if method.endswith("(int)") else False)
+                        self.display_header(job_message + ID + tagID)
+                        code = Scripts.create_zeroorderastrom(
+                            self.maindir, self.sciencedir.path, tag,
+                            integer_shift, env=self.theli_env,
+                            verb=self.verbosity)
+                    elif method == "xcorr":
+                        self.display_header(job_message + ID + tagID)
+                        code = Scripts.create_xcorrastrom(
+                            self.maindir, self.sciencedir.path, tag,
+                            env=self.theli_env, verb=self.verbosity)
+                    elif method == "header":
+                        self.display_header(job_message + ID + tagID)
+                        code = Scripts.create_headerastrom(
+                            self.maindir, self.sciencedir.path, tag,
+                            env=self.theli_env, verb=self.verbosity)
                     self.check_return_code(code)
-                elif method == "astrometry.net":
-                    self.display_header(job_message + ID + tagID)
-                    code = Scripts.create_astrometrynet(
-                        self.maindir, self.sciencedir.path, tag,
+                    self.display_header(
+                        "Collecting image statistics" + ID + tagID)
+                    code = Scripts.create_stats_table(
+                        self.maindir, self.sciencedir.path, tag, "headers",
                         env=self.theli_env, verb=self.verbosity)
                     self.check_return_code(code)
                     self.display_header(
-                        "Calculating photometric solution" + ID + tagID)
-                    code = Scripts.create_astrometrynet_photom(
-                        self.maindir, self.sciencedir.path, tag,
+                        "Collecting information for coaddition" + ID + tagID)
+                    code = Scripts.create_absphotom_coadd(
+                        self.maindir, self.sciencedir.path,
                         env=self.theli_env, verb=self.verbosity)
                     self.check_return_code(code)
-                elif method.startswith("shift"):
-                    integer_shift = True if method.endswith("(int)") else False
-                    self.display_header(job_message + ID + tagID)
-                    code = Scripts.create_zeroorderastrom(
-                        self.maindir, self.sciencedir.path, tag, integer_shift,
-                        env=self.theli_env, verb=self.verbosity)
-                    self.check_return_code(code)
-                elif method == "xcorr":
-                    self.display_header(job_message + ID + tagID)
-                    code = Scripts.create_xcorrastrom(
-                        self.maindir, self.sciencedir.path, tag,
-                        env=self.theli_env, verb=self.verbosity)
-                    self.check_return_code(code)
-                elif method == "header":
-                    self.display_header(job_message + ID + tagID)
-                    code = Scripts.create_headerastrom(
-                        self.maindir, self.sciencedir.path, tag,
-                        env=self.theli_env, verb=self.verbosity)
-                    self.check_return_code(code)
-                self.display_header("Collecting image statistics" + ID + tagID)
-                code = Scripts.create_stats_table(
-                    self.maindir, self.sciencedir.path, tag, "headers",
-                    env=self.theli_env, verb=self.verbosity)
-                self.check_return_code(code)
-                self.display_header(
-                    "Collecting information for coaddition" + ID + tagID)
-                code = Scripts.create_absphotom_coadd(
-                    self.maindir, self.sciencedir.path,
-                    env=self.theli_env, verb=self.verbosity)
-                self.check_return_code(code)
+                except KeyboardInterrupt:
+                    folder.restore_state()
+                    raise
+                finally:
+                    folder.unfreeze()
         self.display_separator()
 
     def astrometry_update_header(self, params={}):
@@ -1697,7 +1764,7 @@ class Reduction(object):
         self.params.set(params)
         raise NotImplementedError()
 
-    def sky_subtraction(self, use_constant_model=False, redo=False, params={}):
+    def sky_subtraction(self, use_constant_model=False, params={}):
         self.params.set(params)
         job_message = "Subtracting the sky"
         # queue data folders
@@ -1723,11 +1790,11 @@ class Reduction(object):
                 self.display_header(job_message + ID)
                 self.display_error("found multiple progress stages")
                 sys.exit(1)
-            if not redo and found_output_files:
+            if not self.redo and found_output_files:
                 self.display_header(job_message + ID)
                 self.display_success("OFC(BHCP).sub images found")
                 continue
-            if redo and found_output_files and not found_input_files:
+            if self.redo and found_output_files and not found_input_files:
                 self.display_header(job_message + ID)
                 self.display_warning(
                     "no OFC(BHCP) images found - skipping redo")
@@ -1739,31 +1806,38 @@ class Reduction(object):
             # run jobs
             for tag in filetags:
                 tagID = " [%s]" % tag if len(filetags) > 1 else ""
-                if redo:
+                if self.redo:
                     folder.delete_tag("*.sub")
                 # constant background model
-                if use_constant_model:
-                    self.display_header(
-                        "Preparing sky subtraction" + ID + tagID)
-                    code = Scripts.create_skysubconst_clean(
-                        self.maindir, self.sciencedir.path,
-                        env=self.theli_env, verb=self.verbosity)
-                    self.check_return_code(code)
-                    self.display_header(job_message + ID + tagID)
-                    code = Scripts.create_skysubconst_para(
-                        self.maindir, self.sciencedir.path, tag,
-                        env=self.theli_env, verb=self.verbosity)
-                    self.check_return_code(code)
-                # variable background model
-                else:
-                    self.display_header(job_message + ID + tagID)
-                    code = Scripts.create_skysub_para(
-                        self.maindir, self.sciencedir.path, tag,
-                        env=self.theli_env, verb=self.verbosity)
-                    self.check_return_code(code)
+                try:
+                    folder.freeze()
+                    if use_constant_model:
+                        self.display_header(
+                            "Preparing sky subtraction" + ID + tagID)
+                        code = Scripts.create_skysubconst_clean(
+                            self.maindir, self.sciencedir.path,
+                            env=self.theli_env, verb=self.verbosity)
+                        self.check_return_code(code)
+                        self.display_header(job_message + ID + tagID)
+                        code = Scripts.create_skysubconst_para(
+                            self.maindir, self.sciencedir.path, tag,
+                            env=self.theli_env, verb=self.verbosity)
+                        self.check_return_code(code)
+                    # variable background model
+                    else:
+                        self.display_header(job_message + ID + tagID)
+                        code = Scripts.create_skysub_para(
+                            self.maindir, self.sciencedir.path, tag,
+                            env=self.theli_env, verb=self.verbosity)
+                        self.check_return_code(code)
+                except KeyboardInterrupt:
+                    folder.restore_state()
+                    raise
+                finally:
+                    folder.unfreeze()
         self.display_separator()
 
-    def coaddition(self, posangle_from_image=False, redo=False, params={}):
+    def coaddition(self, posangle_from_image=False, params={}):
         self.params.set(params)
         job_message = "Coadding images"
         do_edge_smoothing = self.params.get("V_COADD_SMOOTHEDGE") != ""
@@ -1792,20 +1866,20 @@ class Reduction(object):
                 self.display_header(job_message + ID)
                 self.display_error("found multiple progress stages")
                 sys.exit(1)
-            if not redo and found_output_files:
+            if not self.redo and found_output_files:
                 self.display_header(job_message + ID)
                 self.display_success("coadd images found")
                 continue
-            if redo and found_output_files and not found_input_files:
+            if self.redo and found_output_files and not found_input_files:
                 self.display_header(job_message + ID)
                 self.display_warning(
                     "no OFC(BHCP) images found - skipping redo")
                 continue
-            if redo and found_output_files and not found_weights:
+            if self.redo and found_output_files and not found_weights:
                 self.display_header(job_message + ID)
                 self.display_warning("no weight maps found - skipping redo")
                 continue
-            if redo and found_output_files and not found_headers:
+            if self.redo and found_output_files and not found_headers:
                 self.display_header(job_message + ID)
                 self.display_warning(
                     "no astrometric header files found - skipping redo")
@@ -1836,58 +1910,66 @@ class Reduction(object):
                                  'V_COADD_FILTER': filterstr})
             else:
                 filterstr = self.params.get("V_COADD_FILTER")
-            if redo:
+            if self.redo:
                 if filterstr == "(null)":
                     filterstr = "null"
                 folder.delete("coadd_" + filterstr)
-            if do_edge_smoothing:
-                # smooth chip edges
-                self.display_header("Coaddition: smoothing overlap" + ID)
-                code = Scripts.create_smoothedge_para(
-                    self.maindir, self.sciencedir.path, tag,
+            try:
+                folder.freeze()
+                if do_edge_smoothing:
+                    # smooth chip edges
+                    self.display_header("Coaddition: smoothing overlap" + ID)
+                    code = Scripts.create_smoothedge_para(
+                        self.maindir, self.sciencedir.path, tag,
+                        env=self.theli_env, verb=self.verbosity)
+                    self.check_return_code(code)
+                # resampling
+                subtag = (
+                    tag + ".sub" if folder.contains_tag(tag + ".sub") else tag)
+                self.display_header("Coaddition: initialising" + ID)
+                if posangle_from_image:
+                    # get position angle of image
+                    angle = get_posangle(os.path.join(folder.abs, "headers"))
+                    if angle == -999:
+                        self.display_warning(
+                            "sky position angle could not be obtained")
+                        angle = 0
+                    self.params.set({"V_COADD_SKYPOSANGLE": str(angle)})
+                code = Scripts.prepare_coadd_swarp(
+                    self.maindir, self.sciencedir.path, subtag,
                     env=self.theli_env, verb=self.verbosity)
                 self.check_return_code(code)
-            # resampling
-            subtag = tag + ".sub" if folder.contains_tag(tag + ".sub") else tag
-            self.display_header("Coaddition: initialising" + ID)
-            if posangle_from_image:
-                # get position angle of image
-                angle = get_posangle(os.path.join(folder.abs, "headers"))
-                if angle == -999:
-                    self.display_warning(
-                        "sky position angle could not be obtained")
-                    angle = 0
-                self.params.set({"V_COADD_SKYPOSANGLE": str(angle)})
-            code = Scripts.prepare_coadd_swarp(
-                self.maindir, self.sciencedir.path, subtag,
-                env=self.theli_env, verb=self.verbosity)
-            self.check_return_code(code)
-            self.display_header("Coaddition: resampling images" + ID)
-            code = Scripts.resample_coadd_swarp_para(
-                self.maindir, self.sciencedir.path, subtag,
-                env=self.theli_env, verb=self.verbosity)
-            self.check_return_code(code)
-            if do_cosmics_filtering:
-                # filter outliers
-                self.display_header("Coaddition: rejecting outliers" + ID)
-                code = Scripts.resample_filtercosmics(
+                self.display_header("Coaddition: resampling images" + ID)
+                code = Scripts.resample_coadd_swarp_para(
+                    self.maindir, self.sciencedir.path, subtag,
+                    env=self.theli_env, verb=self.verbosity)
+                self.check_return_code(code)
+                if do_cosmics_filtering:
+                    # filter outliers
+                    self.display_header("Coaddition: rejecting outliers" + ID)
+                    code = Scripts.resample_filtercosmics(
+                        self.maindir, self.sciencedir.path,
+                        env=self.theli_env, verb=self.verbosity)
+                    self.check_return_code(code)
+                # coaddition
+                self.display_header("Coaddition: coadding images" + ID)
+                code = Scripts.perform_coadd_swarp(
                     self.maindir, self.sciencedir.path,
                     env=self.theli_env, verb=self.verbosity)
                 self.check_return_code(code)
-            # coaddition
-            self.display_header("Coaddition: coadding images" + ID)
-            code = Scripts.perform_coadd_swarp(
-                self.maindir, self.sciencedir.path,
-                env=self.theli_env, verb=self.verbosity)
-            self.check_return_code(code)
-            self.display_header("Coaddition: updating header" + ID)
-            code = Scripts.update_coadd_header(
-                self.maindir, self.sciencedir.path, tag,
-                env=self.theli_env, verb=self.verbosity)
-            self.check_return_code(code)
+                self.display_header("Coaddition: updating header" + ID)
+                code = Scripts.update_coadd_header(
+                    self.maindir, self.sciencedir.path, tag,
+                    env=self.theli_env, verb=self.verbosity)
+                self.check_return_code(code)
+            except KeyboardInterrupt:
+                folder.restore_state()
+                raise
+            finally:
+                folder.unfreeze()
         self.display_separator()
 
-    def resolve_links(self, redo=False, params={}):
+    def resolve_links(self, params={}):
         # if (command.find("resolvelinks.sh") != -1)
         # reply.append("Resolving link structure ...");
         self.params.set(params)
