@@ -28,6 +28,7 @@ class Folder(object):
             number of chips the instrument has
     """
 
+    _state = None  # folder content lists for freeze method
     _fits_index = {}  # database of FITS files in the folder
     _update_time = 0  # time stamp of last update
     _update_delay = 0.05  # minimum time in seconds between two updates
@@ -88,6 +89,42 @@ class Folder(object):
         """Return list of contained folders"""
         content = [os.path.join(self.abs, c) for c in os.listdir(self.abs)]
         return [c for c in content if os.path.isdir(c)]
+
+    def files(self):
+        """Return list of contained files"""
+        content = [os.path.join(self.abs, c) for c in os.listdir(self.abs)]
+        return [c for c in content if os.path.isfile(c)]
+
+    def freeze(self):
+        """Record the current folder contents"""
+        self._state = (set(self.folders()), set(self.files()))
+
+    def restore_state(self):
+        """Restore folder to previously recorded state.
+
+        Returns:
+            success [bool]:
+                weather the file operations were successfull or not
+        """
+        if self._state is not None:
+            current_state = (set(self.folders()), set(self.files()))
+            # start deleting all entries newer than when freezing state
+            success = True
+            for folder in (current_state[0] - self._state[0]):
+                try:
+                    shutil.rmtree(folder)
+                except Exception:
+                    success = False
+            for file in (current_state[1] - self._state[1]):
+                try:
+                    os.unlink(file)
+                except Exception:
+                    success = False
+            return success
+
+    def unfreeze(self):
+        """Remove folder content record"""
+        self._state = None
 
     def fits(self, tag='*', ignore_sub=False):
         """Update index and return a list of files that have tags matching the
