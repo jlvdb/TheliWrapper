@@ -825,15 +825,14 @@ class Reduction(object):
                     env=self.theli_env, verb=self.verbosity)
                 # check if background modelling failed
                 if folder.contains("NOSKYCORR"):
-                    noskycorr = True
                     folder.lift_content("NOSKYCORR")
                     folder.delete("BACKGROUND")
                     folder.delete("MASK_IMAGES")
                     folder.delete("OFC_IMAGES")
-                self.check_return_code(code)
-                if noskycorr:
                     self.display_error(
-                        "Background modelling failed - revert changes")
+                        "Background modelling failed - revert changes.\n" +
+                        "Shortening the root folder path may solve this")
+                self.check_return_code(code)
         self.display_separator()
 
     def merge_sequence(self, params={}):
