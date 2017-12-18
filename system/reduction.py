@@ -67,6 +67,12 @@ class Reduction(object):
                 self.display_error(
                     "%s: not found: %s" % (name, abspath))
                 sys.exit(1)
+            # test folder contains files
+            if not len(os.listdir(abspath)) > 0:
+                print(self)
+                self.display_error(
+                    "%s: is empty: %s" % (name, abspath))
+                sys.exit(1)
             # register a Folder instance
             setattr(self, folder, Folder(abspath))
         # set title
