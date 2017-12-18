@@ -23,7 +23,7 @@ parse_actions = {
         "name": "Split FITS / correct header",
         "func": "split_FITS_correct_header",
         "para": [],
-        "help": "Splits multi-extension FITS files, and "
+        "help": "Splits multi-extension FITS files and "
                 "writes the THELI standard FITS header"},
     # "Lc": {
     #     "ordr": 3,
