@@ -20,7 +20,7 @@ parse_actions = {
     "Fs": {
         "name": "Split FITS / correct header",
         "func": "split_FITS_correct_header",
-        "para": ['redo'],
+        "para": [],
         "help": "Splits multi-extension FITS files, and "
                 "writes the THELI standard FITS header"},
     "Lc": {
@@ -31,22 +31,22 @@ parse_actions = {
     "Cb": {
         "name": "Process biases",
         "func": "process_biases",
-        "para": ['cal_bias_mode_min', 'cal_bias_mode_max', 'redo'],
+        "para": ['cal_bias_mode_min', 'cal_bias_mode_max'],
         "help": "Creates a master bias from a series of bias exposures"},
     "Cd": {
         "name": "Process draks",
         "func": "process_darks",
-        "para": ['cal_dark_mode_min', 'cal_dark_mode_max', 'redo'],
+        "para": ['cal_dark_mode_min', 'cal_dark_mode_max'],
         "help": "Creates a master dark from a series of dark exposures"},
     "Cf": {
         "name": "Process flats",
         "func": "process_flats",
-        "para": ['cal_flat_mode_min', 'cal_flat_mode_max', 'redo'],
+        "para": ['cal_flat_mode_min', 'cal_flat_mode_max'],
         "help": "Creates a master flat from a series of flat field exposures"},
     "Cs": {
         "name": "Calibrate data",
         "func": "calibrate_data",
-        "para": ['use_dark', 'cal_data_mode_min', 'cal_data_mode_max', 'redo'],
+        "para": ['use_dark', 'cal_data_mode_min', 'cal_data_mode_max'],
         "help": "Applies the master bias and master flat to the data"},
     "Gs": {
         "name": "Spread sequence (NIR)",
@@ -56,7 +56,7 @@ parse_actions = {
     "Bm": {
         "name": "Background model correction",
         "func": "background_model_correction",
-        "para": ['redo'],
+        "para": [],
         "help": "Applies a background correction (subtraction, "
                 "superflat, fringe model, NIR sky)"},
     "Gm": {
@@ -67,41 +67,41 @@ parse_actions = {
     "Bn": {
         "name": "Chop/Nod sky subtraction",
         "func": "chop_nod_skysub",
-        "para": ['chop_pattern', 'chop_pattern_invert', 'redo'],
+        "para": ['chop_pattern', 'chop_pattern_invert'],
         "help": "Does a chop-nod sky subtraction for mid-IR data"},
     "Bc": {
         "name": "Collapse correction",
         "func": "collapse_correction",
-        "para": ['redo'],
+        "para": [],
         "help": "Does a collapse correction to remove "
                 "horizontal or vertical gradients"},
     "Di": {
         "name": "Debloom images",
         "func": "debloom_images",
-        "para": ['redo'],
+        "para": [],
         "help": "Removes blooming spikes in the images (for "
                 "the preparation of colour pictures)"},
     "Vb": {
         "name": "Create binned preview",
         "func": "create_binned_preview",
-        "para": ['redo'],
+        "para": [],
         "help": "Creates a binned overview image for each exposure "
                 "of a multi-chip camera, and a TIFF image."},
     "Wg": {
         "name": "Create global weights",
         "func": "create_global_weights",
-        "para": ['redo'],
+        "para": [],
         "help": "Creates the basic weight map for "
                 "the individual weight images"},
     "Wc": {
         "name": "Create weights",
         "func": "create_weights",
-        "para": ['redo'],
+        "para": [],
         "help": "Creates the individual weight maps for each image"},
     "Ds": {
         "name": "Distribute target sets",
         "func": "distribute_target_sets",
-        "para": ['image_min_overlap', 'redo'],
+        "para": ['image_min_overlap'],
         "help": "Identifies image associations on the sky. The SCIENCE "
                 "directory field in the Initialise section will then "
                 "point to the first association found, SCIENCE_set_1."},
@@ -109,32 +109,31 @@ parse_actions = {
         "name": "Get reference catalogue",
         "func": "get_reference_catalog",
         "para": ['ref_cat', 'ref_cat_server', 'ref_image',
-                 'ref_image_detect_thresh', 'ref_image_detect_min_area',
-                 'redo'],
+                 'ref_image_detect_thresh', 'ref_image_detect_min_area'],
         "help": "Downloads a reference catalogue from "
                 "web or creates it from an image"},
     "Pi": {
         "name": "Absolute photometry (indirect)",
         "func": "absolute_photometry_indirect",
-        "para": ['redo'],
+        "para": [],
         "help": "Attempts to derive absolute photometric "
                 "zeropoints for each exposure."},
     "Pd": {
         "name": "Absolute photometry (direct)",
         "func": "absolute_photometry_direct",
-        "para": ['redo'],
+        "para": [],
         "help": "Attempts to derive absolute photometric "
                 "zeropoints for each exposure."},
     "As": {
         "name": "Create source catalogue",
         "func": "create_source_cat",
-        "para": ['redo'],
+        "para": [],
         "help": "Creates a source catalogue for each image "
                 "for later astrometry and photometry"},
     "Ac": {
         "name": "Astro+photomtery",
         "func": "astro_and_photometry",
-        "para": ['astrometry_method', 'ignore_scamp_segfault', 'redo'],
+        "para": ['astrometry_method', 'ignore_scamp_segfault'],
         "help": "Calculates astrometric and photometric solutions"},
     "Hu": {
         "name": "Update header",
@@ -156,12 +155,12 @@ parse_actions = {
     "Ss": {
         "name": "Sky subtraction",
         "func": "sky_subtraction",
-        "para": ['sky_model_const', 'redo'],
+        "para": ['sky_model_const'],
         "help": "Subtracts the sky from the images"},
     "Ca": {
         "name": "Coaddition",
         "func": "coaddition",
-        "para": ['cd_posangle_from_image', 'redo'],
+        "para": ['cd_posangle_from_image'],
         "help": "Coadds the data"},
     "Lr": {
         "name": "Resolve links",
