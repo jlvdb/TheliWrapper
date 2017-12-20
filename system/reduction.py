@@ -306,7 +306,7 @@ class Reduction(object):
                         "cannot stat text display '%s'" % self.logdisplay)
             sys.exit(2)
 
-    # ################## processing steps ##################
+    # ################## Preparation ##################
 
     def sort_data_using_FITS_key(self, params={}):
         """
@@ -405,6 +405,8 @@ class Reduction(object):
                 env=self.theli_env, verb=self.verbosity)
             self.check_return_code(code)
         self.display_separator()
+
+    # ################## Calibration ##################
 
     def process_biases(self, minmode=None, maxmode=None, params={}):
         self.params.set(params)
@@ -681,6 +683,8 @@ class Reduction(object):
                 env=self.theli_env, verb=self.verbosity)
             self.check_return_code(code)
         self.display_separator()
+
+    # ################## Background ##################
 
     def spread_sequence(self, ngroups, grouplen, params={}):
         self.params.set(params)
@@ -1057,6 +1061,8 @@ class Reduction(object):
                 folder.unfreeze()
         self.display_separator()
 
+    # ################## Weighting ##################
+
     def debloom_images(self, saturation=55000, params={}):
         self.params.set(params)
         job_message = "Deblooming images"
@@ -1314,6 +1320,8 @@ class Reduction(object):
                 env=self.theli_env, verb=self.verbosity)
             self.check_return_code(code)
         self.display_separator()
+
+    # ################## Astrom / Photom ##################
 
     def get_reference_catalog(
             self, refcat="SDSS-DR9", server="vizier.u-strasbg.fr",
@@ -1754,6 +1762,8 @@ class Reduction(object):
         """
         self.params.set(params)
         raise NotImplementedError()
+
+    # ################## Coaddition ##################
 
     def sky_subtraction_helper(self, params={}):
         """
